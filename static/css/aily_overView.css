@@ -1,0 +1,604 @@
+body {
+    background-color: rgb(240, 240, 240);
+    /* 禁止页面滚动 */
+    overflow: hidden;
+}
+
+.panal {
+    box-shadow: 0 0 0px 0px #e4e4e4;
+    /* background-color: white; */
+}
+
+/* 决定select model选择框的字体大小和粗细 */
+.form-select {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.float_class {
+    float: left;
+}
+
+.title_small {
+    font-size: small;
+    font-weight: 600;
+    margin-bottom: 0px;
+    text-align: center;
+    color: black;
+}
+
+#title_small_robustness {
+    font-size: small;
+    font-weight: 600;
+    margin-bottom: 0px;
+
+}
+
+.div_imgcard_info {
+    width: 180px;
+    height: 42px;
+    text-align: center;
+    flex-direction: column ;
+    justify-content: center;
+    align-items: center;
+}
+
+.div_model_info_p{
+    float: left;
+    height: 25px;
+}
+
+.div_imgcard_info_p {
+    float: left;
+    width: 90px;
+    height: 25px;
+    /* border-bottom: 2px solid #929294; */
+}
+
+#div_bottom_line1 {
+    width: 155px;
+    margin: auto;
+    border-bottom: 3px solid #929294;
+}
+
+#div_bottom_line2 {
+    width: 145px;
+    margin: auto;
+    border-bottom: 2px solid #929294;
+}
+
+#div_model_name {
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#div_compare_pic {
+    height: 25px;
+}
+
+
+#div_robustness {
+    /* position: absolute;
+    top: 504px;
+    left: 5px; */
+    margin-top: 7px;
+    margin-bottom: 5px;
+}
+
+#p_probability_istribution {
+    margin-top: 7px;
+}
+
+#p_semantic_transition {
+    position: absolute;
+    top: 505px;
+    left: 33px;
+}
+
+.text_sementics {
+    font-size: small;
+    text-align: center;
+}
+
+#svgContainer_semantic_transition {
+    position: relative;
+    top: 23px;
+}
+
+#div_single_grid,
+#div_single_map,
+#div_line_chart {
+    float: left;
+    background-color: white;
+}
+
+#select_dimX_selection,
+#select_dimY_selection {
+    /* float: left; */
+    width: 300px;
+}
+
+#panal_top {
+    margin-top: 15px;
+    margin-left: 10px;
+    margin-right: 17px;
+    margin-bottom: 3px;
+    height: 50px;
+    /* border-top: 2px solid #929294; */
+    /* border-bottom: 2px solid #929294; */
+}
+
+#panal_left {
+    float: left;
+}
+
+#panal_left_up {
+    background-color: white;
+    height: 350px;
+    width: 180px;
+    margin-top: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#panal_left_down {
+    background-color: white;
+    height: 802px;
+    width: 180px;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    border-top-left-radius: 0.375rem;
+    /*控制边框圆角*/
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+#map,
+#original_preview,
+#preview {
+    float: left;
+    /* background-color: white; */
+    height: 800px;
+    width: 800px;
+    /* margin-top: 10px; */
+    /* margin-left: 3px; */
+    /* margin-right: 4px; */
+}
+
+#svgContainer_heatMapGrid,
+#svgContainer_heatMapGrid_right{
+    height: 802px;
+    width: 802px;
+}
+
+#select_dataset_type_selection {
+    width: 160px;
+    margin-top: 8px;
+    margin-left: 5px;
+    margin-right: 20px;
+    /* color: red; */
+}
+
+#select_model_selection {
+    width: 200px;
+    margin-top: 8px;
+    margin-left: 5px;
+    margin-right: 20px;
+    /* color: red; */
+}
+
+#select_model_selection_compare {
+    width: 200px;
+    margin-top: 8px;
+    margin-left: 5px;
+    margin-right: 30px;
+    /* color: blue; */
+}
+
+.div_select_label {
+    margin-left: 10px;
+    height: 20px;
+}
+
+.select_label {
+    margin-top: 14px;
+    font-size: medium;
+    color: black;
+    font-weight: 600;
+}
+
+#div_draw {
+    float: left;
+
+}
+
+#btn_view_switch,
+#btn_compare {
+    box-shadow: 0 0 2px 2px #e4e4e4;
+    margin-top: 10px;
+}
+
+.panal_top_element {
+    float: left;
+}
+
+.btn-outline-primary {
+    background-color: rgb(240 240 240);
+    color: #000000;
+    border-color: #ced4da;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: #929294;
+    border-color: white;
+}
+
+.btn-outline-primary:focus,
+.btn-primary:focus {
+    /* color: #fff;
+    background-color: #0d6efd;
+    border-color: white; */
+    box-shadow: none;
+}
+
+.btn-group>.btn-group:not(:first-child),
+.btn-group>.btn:not(:first-child) {
+    margin-left: 0px;
+}
+
+.btn {
+    transition: none;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #929294;
+    border-color: #929294;
+}
+
+.btn-primary:focus {
+    color: #fff;
+    background-color: #929294;
+    border-color: #929294;
+}
+
+#button_draw {
+    margin-left: 25px;
+    margin-top: 9px;
+    height: 32px;
+    padding: 2px 10px;
+}
+
+#map,
+#div_grid {
+    position: relative;
+    background-color: white;
+    height: 800px;
+    width: 800px;
+}
+
+#svgContainer_map {
+    float: left;
+    /* border: 1px solid #929294; */
+    /* border-bottom: 1px solid #929294;
+    border-right: 1px solid #929294; */
+}
+
+#map-control {
+    float: left;
+    margin-left: 100px;
+    margin-top: 3px;
+    margin-bottom: 0px;
+}
+
+/* #btn_contours_setting {
+    float: left;
+    margin-left: 80px;
+    margin-top: 3px;
+    margin-bottom: 0px;
+    box-shadow: 0 0 2px 2px #e4e4e4;
+} */
+#control_resolution {
+    float: left;
+    margin-top: 20px;
+    /* margin-bottom: 5px; */
+    margin-left: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#control_resolution_copy {
+    float: left;
+    margin-top: 12px;
+    margin-left: 30px;
+    font-size: medium;
+    font-weight: 600;
+
+}
+
+#preview-control {
+    margin-left: 768px;
+    margin-top: 14px;
+    margin-bottom: 5px;
+}
+
+#thresholds,
+#thresholds_right,
+#thresholds_diff {
+    /* height: 257px; */
+    width: 57px;
+    /* margin-top: 461px; */
+    /* margin-left: 2px; */
+    margin-bottom: 5px;
+    position: absolute;
+    bottom: 0;
+    /* background-color: white; */
+}
+
+#thresholds>*,
+#thresholds_right>*,
+#thresholds_diff>* {
+    /* margin-top: 5px; */
+    position: relative;
+    top: 8px;
+}
+
+#div_switch_model,
+#div_switch_view {
+    margin-top: 10px;
+    margin-left: 2px;
+    margin-right: 2px;
+    color: #000;
+}
+#div_switch_view_right {
+    margin-top: 10px;
+    margin-left: 2px;
+    margin-right: 2px;
+    color: #000;
+}
+
+#div_middleControlContainer,
+#div_rightControlContainer {
+    /*position: relative;*/
+    float: left;
+}
+
+.form-check-label {
+    font-size: small;
+    font-weight: 600;
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    /*color: black; !* 将文本颜色设置为黑色 *!*/
+}
+
+.form-check-input:checked {
+    background-color: #929294;
+    border-color: #dedede;
+}
+
+/* .input_radio {
+    margin: .1rem;
+} */
+#classes {
+    float: left;
+    height: 415px;
+    width: 53px;
+    margin-top: 317px;
+    /* background-color: white; */
+}
+
+#types,
+#types_right{
+    float: left;
+    height: 415px;
+    width: 53px;
+    margin-top: 328px;
+    /* background-color: white; */
+}
+
+.control_btn {
+    margin-top: 15px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.title {
+    font-size: medium;
+    color: black;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.imgcard,
+.controlpanel {
+    padding-top: 10px;
+    text-align: center;
+}
+
+.panel_title {
+    height: 45px;
+    width: 160px;
+    margin: auto;
+    border-bottom: 3px solid #929294;
+}
+
+/* 调节分辨率滑动条的上边距 */
+#resolution {
+    width: 110px;
+    height: 7px;
+}
+
+.color_block {
+    margin: auto;
+    width: 30px;
+    height: 15px;
+    margin-top: 8px;
+}
+.color_block_rob {
+    margin: auto;
+    width: 30px;
+    height: 15px;
+    margin-top: 8px;
+}
+
+/* .color_block {
+    cursor: pointer;
+} */
+.threshold_value,
+.classes_name {
+    margin: auto;
+    margin-top: 1px;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: x-small;
+    color: #000;
+}
+
+.threshold_value_div {
+    height: 18px;
+}
+
+.classes_name_div {
+    height: 17px;
+}
+
+#threshold_unit {
+    margin-top: 5px;
+    /* font-size: ; */
+}
+
+#click_img_div {
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#click_img {
+    border: 1px solid rgb(24, 21, 21);
+}
+
+#compare_img_div {
+    width: 160px;
+    height: 80px;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#click_start,
+#click_end {
+    width: 70px;
+    height: 70px;
+    border: 1px solid rgb(24, 21, 21);
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    float: left;
+}
+
+.click_start,
+.click_end {
+    width: 70px;
+    height: 70px;
+    border: 1px solid rgb(24, 21, 21);
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    float: left;
+}
+
+.imgcard_variable_p {
+    font-size: small;
+    font-weight: 500;
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    color: #000;
+}
+
+/* .spinner-border {
+    position: absolute;
+    top: 362px;
+    left: 382px;
+    display: none;
+    z-index: 1;
+} */
+#spinner_top {
+    float: left;
+    margin-left: 100px;
+    margin-top: 6px;
+    display: none;
+}
+
+.d3-tip {
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.4;
+    padding: 7px;
+    pointer-events: none !important;
+    color: #203d5d;
+    box-shadow: 0 4px 20px 4px rgba(0, 20, 60, .1), 0 4px 80px -8px rgba(0, 20, 60, .2);
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: #fff;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Northward tooltips */
+.d3-tip.n:after {
+    content: "▼";
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+    text-align: center;
+}
+
+/* confidence distribution */
+/* .bars rect {
+    fill: #929294;
+} */
+/* .bars rect:hover {
+    fill: orange;
+} */
+.labels text {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    text-anchor: end;
+    font-size: small;
+    color: black;
+    /* font-weight: 600; */
+}
+
+/* 柱状图前面的数字标识*/
+.bars1 text {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    text-anchor: end;
+    font-size: 10px;
+    fill: black;
+    /* font-weight: 600; */
+}
+
+.bars2 text {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    text-anchor: start;
+    /*这两个悬停的位置不一样*/
+    font-size: 10px;
+    fill: black;
+    /* font-weight: 600; */
+}

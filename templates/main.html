@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Robust map website</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <!-- 按钮相关的css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <!-- 自己本地的css文件 -->
+    <link rel="stylesheet" href="../static/css/my_style.css">
+    <link rel="stylesheet" href="../static/css/aily_overView.css">
+
+
+</head>
+
+<!-- 页面主体 -->
+
+<body onload="start_main()">
+
+    <!-- 头部 -->
+    <div class="" id="panal_top">
+        <!-- 模型选择栏目 -->
+        <div>
+            <!-- 选择数据集 -->
+            <div class="div_select_label panal_top_element ">
+                <p class="select_label">Selected dataset: </label>
+            </div>
+            <select class="panal_top_element  form-select  form-select-sm  shadow-none" aria-label="model selection"
+                id="select_dataset_type_selection">
+                <option value="CIFAR10" selected>CIFAR10</option>
+                <option value="SteeringAngle">SteeringAngle</option>
+            </select>
+            <!-- 模型一 -->
+            <div class="div_select_label panal_top_element ">
+                <p class="select_label">Selected model: </label>
+            </div>
+            <select class="panal_top_element  form-select  form-select-sm  shadow-none" aria-label="model selection"
+                id="select_model_selection">
+<!--                <option value="AlexNet" selected>AlexNet</option>-->
+                <option value="ResNet20" selected>ResNet20</option>
+                <option value="ResNet32">ResNet32</option>
+                <option value="ResNet44">ResNet44</option>
+                <option value="ResNet56">ResNet56</option>
+                <option value="VGG11_BN">VGG11_BN</option>
+                <option value="VGG13_BN">VGG13_BN</option>
+                <option value="VGG16_BN">VGG16_BN</option>
+                <option value="VGG19_BN">VGG19_BN</option>
+                <option value="MobileNetV2_x0_5">MobileNetV2_x0_5</option>
+                <option value="MobileNetV2_x0_75">MobileNetV2_x0_75</option>
+                <option value="MobileNetV2_x1_0">MobileNetV2_x1_0</option>
+                <option value="MobileNetV2_x1_4" >MobileNetV2_x1_4</option>
+            </select>
+            <!-- 模型二 -->
+            <div class="div_select_label panal_top_element " style="display: none;">
+                <p class="select_label">Selected model 2 (M2):</label>
+            </div>
+            <select class="panal_top_element  form-select  form-select-sm  shadow-none" aria-label="model selection"
+                id="select_model_selection_compare" style="display: none;">
+                <option selected>None</option>
+                <option value="ResNet20">ResNet20</option>
+                <option value="ResNet32">ResNet32</option>
+                <option value="ResNet44">ResNet44</option>
+                <option value="ResNet56">ResNet56</option>
+                <option value="VGG11_BN">VGG11_BN</option>
+                <option value="VGG13_BN">VGG13_BN</option>
+            </select>
+
+        </div>
+        <!-- ======================================= -->
+        <!-- 隐藏start按钮 -->
+        <button class="panal_top_element  btn btn-primary" id="button_draw" style="display: none;">Start</button>
+
+        <!-- 分辨率选择 -->
+        <div class="panal_top_element" id="control_resolution_copy" style="margin-left: 10px;">
+            <label for="resolution">Resolution</label>
+            <input type="range" id="resolution" value="30" min="30" max="100" step="10"
+                oninput="document.getElementById('resolution_value').innerHTML = this.value + ' × ' + this.value" />
+            <label for="resolution" id="resolution_value">30 × 30</label>
+        </div>
+        <!-- 反距离指数选择 -->
+        <div class="panal_top_element" id="control_resolution_copy" style="margin-left: 10px;">
+            <label for="idw_p">IDW_P</label>
+            <input type="range" id="idw_p" value="50" min="1" max="50" step="1"
+                oninput="document.getElementById('idw_p_value').innerHTML = this.value"/>
+            <label for="idw_p" id="idw_p_value">50</label>
+        </div>
+        <!-- ======================================= -->
+
+        <!-- 交互式按钮 -->
+        <div class="panal_top_element  btn-group panal" id="map-control" role="group"
+            aria-label="Basic outlined example" style="margin-left: 25px;">
+            <!-- 放大按钮 -->
+            <button type="button" class="btn btn-outline-primary" id="zoom-in" data-bs-toggle="tooltip" title="Zoom In">
+                <i class="bi bi-zoom-in"></i>
+            </button>
+            <!-- 缩小按钮 -->
+            <button type="button" class="btn btn-outline-primary" id="zoom-out" data-bs-toggle="tooltip"
+                title="Zoom Out">
+                <i class="bi bi-zoom-out"></i>
+            </button>
+            <!-- 选框放大按钮 -->
+            <input type="checkbox" class="btn-check shadow-none" id="btn_crop" autocomplete="off">
+            <label class="btn btn-outline-primary shadow-none" for="btn_crop" data-bs-toggle="tooltip" title="Box Zoom">
+                <i class="bi bi-plus-square"></i>
+            </label>
+            <!-- 平移按钮 -->
+            <input type="checkbox" class="btn-check shadow-none" id="btn_pan" autocomplete="off">
+            <label class="btn btn-outline-primary shadow-none" for="btn_pan" data-bs-toggle="tooltip" title="Pan">
+                <i class="bi bi-arrows-move"></i>
+            </label>
+            <!-- 刷子按钮 -->
+            <input type="checkbox" class="btn-check shadow-none" id="btn_brush" autocomplete="off">
+            <label class="btn btn-outline-primary shadow-none" for="btn_brush" data-bs-toggle="tooltip"
+                title="Box Select">
+                <i class="bi bi-fullscreen"></i>
+            </label>
+            <!-- 定位点按钮 -->
+            <input type="checkbox" class="btn-check shadow-none" id="btn_locate" autocomplete="off">
+            <label class="btn btn-outline-primary shadow-none" for="btn_locate" data-bs-toggle="tooltip"
+                title="Click Select">
+                <i class="bi bi-geo-alt"></i>
+            </label>
+            <!-- 画线对比按钮 -->
+            <input type="checkbox" class="btn-check shadow-none" id="btn_line" autocomplete="off">
+            <label class="btn btn-outline-primary shadow-none" for="btn_line" data-bs-toggle="tooltip"
+                title="Line Select">
+                <i class="bi bi-slash-lg"></i>
+            </label>
+            <!-- 清除记录按钮 -->
+            <button type="button" class="btn btn-outline-primary" id="btn_clear" data-bs-toggle="tooltip" title="Clear">
+                <i class="bi bi-eraser"></i>
+            </button>
+            <!-- 设置热力图区间 -->
+            <button type="button" class="btn btn-outline-primary" id="setting_threshold" data-bs-toggle="modal"
+                data-bs-target="#myModal" data-bs-toggle="tooltip" title="setting threshold">
+                <i class="bi bi-gear"></i>
+            </button>
+
+            <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog klj-setting-threhold-modal" style="position:absolute;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Setting the contour plot</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="row justify-content-center">
+                                    <label for="lower_bound" class="col col-form-label text-center"
+                                        style="padding-left: 28px;">Lower Bound</label>
+                                    <div class="col" style="padding-left: 0;">
+                                        <input type="number" class="form-control text-center" id="lower_bound"
+                                            name="lower_bound" placeholder="0.001" step="0.001" value="-9"
+                                            style="width: 95px;height:35px;margin: 0;">
+                                    </div>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <label for="threshold_step" class="col col-form-label text-center"
+                                        style="padding-left: 28px;">Step</label>
+                                    <div class="col" style="padding-left: 0;">
+                                        <input type="number" class="form-control text-center" id="threshold_step"
+                                            name="threshold_step" placeholder="0.001" step="0.001" value="3"
+                                            style="width: 95px;height:35px;margin: 0;">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="threshold_save">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <!-- ======================================= -->
+        <!-- 旋转图标 -->
+        <div class="spinner-border" id="spinner_top" role="status" style="margin-left: 25px;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- 中间体 -->
+    <section class="bg-gradient">
+        <div class="container-fluid text-light">
+            <div class="row">
+                <!-- #########################中左######################### -->
+                <div id="middle_left" class="col-auto rounded-2" style="padding: 0px;">
+                    <div class="panal" id="panal_left_down">
+                        <div class="panel_title">
+                            <p class="title imgcard">Image Information</p>
+                        </div>
+                        <!-- 图片框 -->
+                        <div id="click_img_div">
+                            <!-- 单击图片 -->
+                            <img id="click_img" src="../static/example/initial_pic/None.png"
+                                style="width: 100%; height: 100%">
+                        </div>
+                        <div id="compare_img_div" style="display: none;">
+                            <!-- 图片对比 -->
+                            <img id="click_start" class="click_start" src="../static/example/initial_pic/None.png">
+                            <img id="click_end" class="click_end" src="../static/example/initial_pic/None.png">
+                        </div>
+
+                        <!-- 模型说明 -->
+                        <div id="div_model_name">
+                            <div class="div_model_info_p">
+                                <P class="title_small" id="model_title_name">ResNet20</P>
+                            </div>
+                            <div class="div_model_info_p" style="display:none">
+                                <P class="title_small">M2</P>
+                            </div>
+                        </div>
+                        <!-- 图片对比 -->
+                        <div id="div_compare_pic" style="display: None;">
+                            <div class="div_imgcard_info_p">
+                                <P class="title_small"><i class="bi bi-geo-alt-fill"></i>Image1</P>
+                            </div>
+                            <div class="div_imgcard_info_p">
+                                <P class="title_small"><i class="bi bi-geo-alt"></i>Image2</P>
+                            </div>
+                        </div>
+
+                        <!-- 一根较粗的线 -->
+                        <div id="div_bottom_line1"></div>
+
+                        <div class="div_imgcard_info" style="display: flex;">
+                            <div class="div_imgcard_info_title">
+                                <p class="title_small" id="task_category">Category</p>
+                            </div>
+                            <div class="div_imgcard_info_p">
+                                <P class="imgcard_variable_p" id="classified-as_1"></P>
+                            </div>
+                            <div class="div_imgcard_info_p" id="seconde_type" style="display:none">
+                                <P class="imgcard_variable_p" id="classified-as_2"></P>
+                            </div>
+                        </div>
+
+                        <div class="div_imgcard_info" id="div_robustness" style="display: flex;">
+                            <div class="div_imgcard_info_title">
+                                <p class="title_small">Robustness</p>
+                            </div>
+                            <div class="div_imgcard_info_p">
+                                <p class="imgcard_variable_p" id="predicted-robustness-value_1"></p>
+                            </div>
+                            <div class="div_imgcard_info_p" id="seconde_robustness" style="display:none">
+                                <p class="imgcard_variable_p" id="predicted-robustness-value_2"></p>
+                            </div>
+                        </div>
+
+                        <div id="div_bottom_line2"></div>
+
+
+                        <p class="title_small" id="p_probability_istribution">Probability Distribution</p>
+                        <div id="svgContainer_probability_distribution">
+                            <!-- 鲁棒性分布svg -->
+                            <svg id="confidence_distribution">
+                                <g id="bars_1"></g>
+                                <g id="labels"></g>
+                                <g id="bars_2"></g>
+                            </svg>
+                        </div>
+
+
+                        <p class="title_small" id="p_semantic_transition" style="display: none;">Semantic Transitions
+                        </p>
+                        <div id="svgContainer_semantic_transition" style="display: none;"></div>
+
+                    </div>
+                </div>
+<!--                左边热力图部分-->
+
+                <!-- #########################中右（图片与类别概览）########################## -->
+                <div id="mix_image" class="col-auto border rounded-2"
+                    style="padding: 0px; margin-top:2px; margin-bottom: 2px;">
+                    <div id="preview">
+                        <div class="panal" id="div_imageGrid">
+                            <!--热力图-->
+                            <div id="svgContainer_heatMapGrid_right" class="col-auto border rounded-2" style="padding: 0px; margin-top:2px; margin-bottom: 2px; display: block">
+                                <svg id="center_heatMap_svg_right">
+                                    <!-- 热力图g -->
+                                    <g id="heatMap_g_right"></g>
+                                    <!-- x轴g -->
+                                    <g id="x_g_right"></g>
+                                    <!-- y轴g -->
+                                    <g id="y_g_right"></g>
+                                    <!-- crop裁剪矩形, 那个画出来的黑色正方形 -->
+                                    <rect id="selection_inner_rect_right"></rect>
+                                    <!-- 坐标图片和圈 -->
+                                    <g id="imageAndCircle_g_right"></g>
+                                    <!-- 用来做图片对比的g -->
+                                    <g id="imageCompare_g_right" style="z-index: 100;"></g>
+                                </svg>
+                            </div>
+                       <!-- 图片网格 -->
+                            <div id="svgContainer_imageGrid_right" style="display: none;">
+                                <svg id="imageGrid_svg_right">
+                                    <g id="imageGrid_g_right"></g>
+                                    <!-- crop裁剪矩形 -->
+                                    <rect id="selection_inner_rect_right"></rect>
+                                </svg>
+
+                            </div>
+                            <!-- 类别网格 -->
+                            <div id="svgContainer_typeGrid_right" style="display: none;">
+                                <svg id="imageTypeGrid_svg_right">
+                                    <g id="imageTypeGrid_g_right"></g>
+                                    <!-- crop裁剪矩形 -->
+                                    <rect id="selection_inner_rect_right"></rect>
+                                </svg>
+                            </div>
+                            <div id="svgContainer_classGrid_2" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- #########################中右（右侧菜单栏）########################## -->
+                <div id="middle_right_menu" class="col-auto border rounded-2"
+                    style="padding: 0px; margin-top:2px; margin-bottom: 2px;">
+                    <div id="div_rightControlContainer" style="position: relative; height: 100%; width: 150px;">
+                        <!-- <button type="button" class="btn btn-outline-primary" id="btn_view_switch" data-bs-toggle="tooltip" title="Mode Switch">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </button> -->
+                        <!--change部分在control.js里边-->
+                        <div id="div_switch_view_right">
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_heatmap_right" name="radio_view_right" checked>
+                                <label class="form-check-label" for="radio_view">Heatmap</label>
+                            </div>
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_image_right" name="radio_view_right">
+                                <label class="form-check-label" for="radio_view">Image</label>
+                            </div>
+
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_classification_right" name="radio_view_right">
+                                <label class="form-check-label" for="radio_view">Label</label>
+                            </div>
+                        </div>
+                        <!-- 原版配色 -->
+                        <!-- <div id="types" style="display: none;">
+                            <div class="color_block" id="color0" style="background-color:#8dd3c7; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color1" style="background-color:#ffffb3; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color2" style="background-color:#bebada; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color3" style="background-color:#fb8072; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color4" style="background-color:#80b1d3; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color5" style="background-color:#fdb462; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color6" style="background-color:#b3de69; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color7" style="background-color:#fccde5; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color8" style="background-color:#d9d9d9; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color9" style="background-color:#bc80bd; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                        </div> -->
+                        <!-- 深色 -->
+                        <!-- 热力图颜色 -->
+                        <div id="thresholds_right" style="display: block;">
+                            <div class="color_block_rob" id="threshold0_right" style="background-color:#fee5d9; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-0-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold1_right" style="background-color:#fcbba1; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-1-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold2_right" style="background-color:#fc9272; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-2-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold3_right" style="background-color:#fb6a4a; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-3-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold4_right" style="background-color:#de2d26; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-4-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold5_right" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-5-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold6_right" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-6-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold7_right" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-7-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold8_right" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-8-value_right" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold9_right" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-9-value_right" class="threshold_value"></p>
+                            </div>
+                            <!-- <div class="color_block" id="threshold9" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-9-value" class="threshold_value"></p>
+                            </div> -->
+                        </div>
+                        <div id="types_right" style="display: none;">
+                            <div class="color_block" id="color0_right" style="background-color:#a6cee3; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color1_right" style="background-color:#1f78b4; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color2_right" style="background-color:#b2df8a; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color3_right" style="background-color:#33a02c; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color4_right" style="background-color:#fb9a99; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color5_right" style="background-color:#e31a1c; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color6_right" style="background-color:#fdbf6f; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color7_right" style="background-color:#ff7f00; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color8_right" style="background-color:#cab2d6; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color9_right" style="background-color:#6a3d9a; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="original_image" class="col-auto border rounded-2"
+                    style="padding: 0px; margin-top:2px; margin-bottom: 2px;">
+                    <div id="original_preview">
+                         <div class="panal" id="div_original_imageGrid">
+                            <!-- #########################中心（热力图概览）######################### -->
+                            <div id="svgContainer_heatMapGrid" class="col-auto border rounded-2"
+                                style="padding: 0px; margin-top:2px; margin-bottom: 2px;display: block">
+                                <!-- 中间的概览 -->
+                                <svg id="center_heatMap_svg">
+                                    <!-- 热力图g -->
+                                    <g id="heatMap_g"></g>
+                                    <!-- x轴g -->
+                                    <g id="x_g"></g>
+                                    <!-- y轴g -->
+                                    <g id="y_g"></g>
+                                    <!-- crop裁剪矩形, 那个画出来的黑色正方形 -->
+                                    <rect id="selection_inner_rect"></rect>
+                                    <!-- 坐标图片和圈 -->
+                                    <g id="imageAndCircle_g"></g>
+                                    <!-- 用来做图片对比的g -->
+                                    <g id="imageCompare_g" style="z-index: 100;"></g>
+                                </svg>
+                            </div>
+                             <!-- 图片网格 -->
+
+                            <div id="svgContainer_imageGrid" style="display: none;">
+                                <svg id="imageGrid_svg">
+                                    <g id="imageGrid_g"></g>
+                                    <!-- crop裁剪矩形 -->
+                                    <rect id="selection_inner_rect"></rect>
+                                </svg>
+
+                            </div>
+                            <!-- 类别网格 -->
+                            <div id="svgContainer_typeGrid" style="display: none;">
+                                <svg id="imageTypeGrid_svg">
+                                    <g id="imageTypeGrid_g"></g>
+                                    <!-- crop裁剪矩形 -->
+                                    <rect id="selection_inner_rect"></rect>
+                                </svg>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+                <!-- #########################中心（中间菜单栏）######################### -->
+                <div id="middle_center_menu" class="col-auto border rounded-2"
+                    style="padding: 0px; margin-top:2px; margin-bottom: 2px;">
+                    <div id="div_middleControlContainer" style="position: relative; height: 100%; width: 150px;">
+                        <div id="div_switch_model" style="display: none;">
+                            <!-- 单选按钮通过name来确定它们是不是一组的，chatgpt说的 -->
+                            <div style="display: none;">
+                                <input class="input_radio" type="radio" id="radio_m1" name="radio_model" value="M1"
+                                    checked>
+                                <label class="form-check-label" for="radio_model">M1</label>
+                            </div>
+
+                            <div style="display: none;">
+                                <input class="input_radio" type="radio" id="radio_m2" name="radio_model" value="M2">
+                                <label class="form-check-label" for="radio_model">M2</label>
+                            </div>
+                            <div style="display: none;">
+                                <input class="input_radio" type="radio" id="radio_diff" name="radio_model"
+                                    value="M1-M2">
+                                <label class="form-check-label" for="radio_model">M1-M2</label>
+                            </div>
+
+                        </div>
+                        <div id="div_switch_view">
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_heatmap" name="radio_view" checked>
+                                <label class="form-check-label" for="radio_view">Heatmap</label>
+                            </div>
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_image" name="radio_view">
+                                <label class="form-check-label" for="radio_view">Image</label>
+                            </div>
+
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_classification" name="radio_view">
+                                <label class="form-check-label" for="radio_view">Label</label>
+                            </div>
+                        </div>
+<!--                        类别颜色-->
+                        <div id="types" style="display: none;">
+                            <div class="color_block" id="color0" style="background-color:#a6cee3; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color1" style="background-color:#1f78b4; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color2" style="background-color:#b2df8a; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color3" style="background-color:#33a02c; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color4" style="background-color:#fb9a99; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color5" style="background-color:#e31a1c; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color6" style="background-color:#fdbf6f; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color7" style="background-color:#ff7f00; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color8" style="background-color:#cab2d6; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color9" style="background-color:#6a3d9a; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                        </div>
+
+
+
+                        <!-- 热力图颜色 -->
+                        <div id="thresholds" style="display: block;">
+                            <div class="color_block_rob" id="threshold0" style="background-color:#fee5d9; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-0-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold1" style="background-color:#fcbba1; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-1-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold2" style="background-color:#fc9272; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-2-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold3" style="background-color:#fb6a4a; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-3-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold4" style="background-color:#de2d26; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-4-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold5" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-5-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold6" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-6-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold7" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-7-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold8" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-8-value" class="threshold_value"></p>
+                            </div>
+                            <div class="color_block_rob" id="threshold9" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-9-value" class="threshold_value"></p>
+                            </div>
+                            <!-- <div class="color_block" id="threshold9" style="background-color:#a50f15; "></div>
+                            <div class="threshold_value_div">
+                                <p id="threshold-9-value" class="threshold_value"></p>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部 -->
+    <!-- <div id="footer" class="container-fluid bg-dark text-light border rounded-2">
+        <footer class="d-flex justify-content-center py-3">footer</footer>
+    </div> -->
+
+
+    <!-- 自定义交互的脚本 -->
+    <script>
+        //全局变量(可以在引用的js脚本里面直接调用)
+        var data_2D;
+        let zoom; //全局缩放函数
+        const heatMap_width = 800, heatMap_height = 800;
+        const imageGrid_width = 800, imageGrid_height = 800;
+        let extent //坐标范围
+        let xScale, yScale;
+        var bins; //网格数量
+        // 模型对应的数据
+        // var robustness_dict, img_DNN_output_lst_400_dict, img_coords_lst_400_dict; //所有的图片对应的坐标都是一样的，就不用图片字典了
+        var robustness_dict, confidence_dict, confidence_fore_dict, img_DNN_for_output_lst_400_dict, img_DNN_output_lst_400_dict, img_coords_lst_400_dict;
+        // 鲁棒性颜色
+        // var color;
+        // var color = ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a", "#de2d26", "#a50f15"];
+        // var color  = ['#fdd1c1', '#fcbba1', '#faa57f', '#f9845b', '#f7683c', '#f03b20', '#e31a1c', '#bd0026', '#800026'];
+        // var color = ['#fff5eb', '#fee6ce', '#fdd0a2', '#fdae6b', '#fd8d3c',
+        //     '#f16913', '#d94801', '#a63603', '#7f2704']; //9-class Oranges
+        color = ['#4575b4','#6c95c5','#93b4d6','#b9d4e7',
+                   '#e0f3f8','#feefea','#e7c6bc','#eba993',
+                    '#f08b6b', '#f46d43']         // color = ['#4575b4', '#74add1', '#abd9e9', '#e0f3f8',
+         //    // '#e8f6fa'
+         //    ];
+        // 鲁棒性阈值
+        //  color = ['#d73027','#f46d43','#fdae61','#fee090',
+        //      '#ffffbf',
+        //     '#e0f3f8','#abd9e9','#74add1','#4575b4'
+        // ]
+        // var thresholds = [.0, .005, .010, .015, .020, .025];
+        var thresholds = [.0, .005, .010, .015];
+
+
+        //热力图的一些全局变量
+        let xAxis, yAxis;
+        let gX, gY, gX_right, gY_right;
+        // 为了保证平移的不变性，我们的坐标其实是存在一定的偏移的，所以写一个偏移函数
+        var coordinates_offset = {}; //全局的坐标偏移变量
+        function offset_xScale(xScale, pos_x) { //返回的是前端网页上的坐标（400的那个）
+            return xScale(pos_x - coordinates_offset["x"])
+        }
+        function offset_xScale_invert(xScale, pos_x) { //返回的是2维潜空间中的坐标（60以内的那个）
+            return xScale.invert(pos_x) + coordinates_offset["x"]
+        }
+        function offset_yScale(yScale, pos_y) { //返回的是前端网页上的坐标（400的那个）
+            return yScale(pos_y - coordinates_offset["y"])
+        }
+        function offset_yScale_invert(yScale, pos_y) { //返回的是2维潜空间中的坐标（60以内的那个）
+            return yScale.invert(pos_y) + coordinates_offset["y"]
+        }
+        
+
+        //启动函数----------------------------------------
+        async function start_main() {
+
+            extent = {
+                "start_x": 0.0,
+                "end_x": 1.0,
+                "start_y": 1.0,
+                "end_y": 0.0
+            }
+            //cifar10坐标范围，注意左上角为起点
+            // extent = {
+            //     "start_x": -60.0,
+            //     "end_x": 60.0,
+            //     "start_y": 60.0,
+            //     "end_y": -60.0
+            // }
+            //飞机和船的交界处
+            // extent = {
+            //     "start_x": 22.074000000000005,
+            //     "end_x": 48.47399999999998,
+            //     "start_y": -21.687000000000005,
+            //     "end_y": -48.08699999999999
+            // }
+            //青蛙的一半好一半坏
+            // extent = {
+            //     "start_x": -48.2175,
+            //     "end_x": -19.71749999999999,
+            //     "start_y": -26.5125,
+            //     "end_y": -55.0125
+            // }
+            //青蛙的一半好一半坏(选择这个区域)
+            // extent = {
+            //     "start_x": -44.11083929995349,
+            //     "end_x": -22.51187822718032,
+            //     "start_y": -32.66797177273473,
+            //     "end_y": -54.2669328455079
+            // }
+            
+            //左半部分青蛙的一个高亮区域（中上）1
+            // extent = {
+            //     "start_x": -38.878895960594306,
+            //     "end_x": -37.82594660829661,
+            //     "start_y": -35.84274906341898,
+            //     "end_y": -36.89569841571667
+            // }
+            //左半部分青蛙的一个高亮区域（中左）2
+            // extent = {
+            //     "start_x": -42.76090423290517,
+            //     "end_x": -41.842948387312305,
+            //     "start_y": -41.01057048709337,
+            //     "end_y": -41.92852633268623
+            // }
+            //左半部分青蛙的一个高亮区域(中下)3
+            // extent = {
+            //     "start_x": -38.11557517693183,
+            //     "end_x": -37.60259985145346,
+            //     "start_y": -47.978294084039966,
+            //     "end_y": -48.491269409518324
+            // }
+
+            //自动驾驶的左边范围--------------------------------------------------------------------------------
+            // extent = {
+            //     "start_x": -100.0,
+            //     "end_x": 100.0,
+            //     "start_y": 100.0,
+            //     "end_y": -100.0
+            // }
+
+            //自动驾驶1-1 左转弯高密度区域
+            // extent = {
+            //     "start_x": -13.799999999999999,
+            //     "end_x": 13.950000000000001,
+            //     "start_y": 41.876875,
+            //     "end_y": 14.126875000000009
+            // }
+            //自动驾驶1-2 右转弯高密度区域
+            // extent = {
+            //     "start_x": 11.656249999999996,
+            //     "end_x": 44.65625,
+            //     "start_y": 2.1462499999999993,
+            //     "end_y": -30.853750000000012
+            // }
+
+            //自动驾驶1-1 左上角低鲁棒性
+            // extent = {
+            //     "start_x": -91.4425,
+            //     "end_x": -66.19250000000001,
+            //     "start_y": 92.34718749999999,
+            //     "end_y": 67.0971875
+            // }
+            //自动驾驶1-2 右上角低鲁棒性
+            // extent = {
+            //     "start_x": 60.486298995688585,
+            //     "end_x": 83.74744068437855,
+            //     "start_y": 97.05766351815237,
+            //     "end_y": 73.79652182946239
+            // }
+            //自动驾驶1-3 左下角低鲁棒性
+            // extent = {
+            //     "start_x": -99.75,
+            //     "end_x": -71.25,
+            //     "start_y": -25.75,
+            //     "end_y": -54.25
+            // }
+            //自动驾驶1-4 上中高鲁棒性
+            // extent = {
+            //     "start_x": -28.42499999999999,
+            //     "end_x": -2.425000000000013,
+            //     "start_y": 98.3275,
+            //     "end_y": 72.3275
+            // }
+            //自动驾驶1-5 3中高鲁棒性
+            // extent = {
+            //     "start_x": 23.572812499999998,
+            //     "end_x": 47.8228125,
+            //     "start_y": 4.030937499999999,
+            //     "end_y": -20.219062499999986
+            // }
+            //自动驾驶1-6 坐下高鲁棒性
+            // extent = {
+            //     "start_x": -108.31187500000003,
+            //     "end_x": -85.06187500000001,
+            //     "start_y": -50.6109375,
+            //     "end_y": -73.8609375
+            // }
+
+            //大红点区域
+            // extent = {
+            //     "start_x": -103.835,
+            //     "end_x": -78.335,
+            //     "start_y": -44.024375,
+            //     "end_y": -69.52437499999999
+            // }
+
+            //自动驾驶，两个高鲁棒性一个低鲁棒性的交界处
+            // extent = {
+            //     "start_x": -59.5,
+            //     "end_x": -6.999999999999993,
+            //     "start_y": 3,
+            //     "end_y": -49.50000000000001
+            // }
+
+            //1-1自动驾驶，左上(同样是绿色，低鲁棒的特点)
+            // extent = {
+            //     "start_x": -97.75,
+            //     "end_x": -43.75,
+            //     "start_y": 96.75,
+            //     "end_y": 42.75
+            // }
+
+            //1-2自动驾驶，右下（同样是绿色，鲁棒性高的特点）
+            // extent = {
+            //     "start_x": 1,
+            //     "end_x": 40.5,
+            //     "start_y": 5.750000000000007,
+            //     "end_y": -33.74999999999999
+            // }
+            //1-3自动驾驶，左下（绿色，有鲁棒性高和低的区域）
+            // extent = {
+            //     "start_x": -100,
+            //     "end_x": -51.5,
+            //     "start_y": -22.500000000000014,
+            //     "end_y": -71
+            // }
+
+            //1-3自动驾驶，高亮中的蓝色背景1
+            // extent = {
+            //     "start_x": 9.838125,
+            //     "end_x": 19.120625,
+            //     "start_y": -22.245624999999993,
+            //     "end_y": -31.528124999999992
+            // }
+
+            //1-1自动驾驶，红色的中间区域
+            // extent = {
+            //     "start_x": 28.499999999999993,
+            //     "end_x": 59.5,
+            //     "start_y": 4.749999999999993,
+            //     "end_y": -26.25
+            // }
+            //1-2自动驾驶，平移到地鲁棒性区域
+            // extent = {
+            //     "start_x": 40.241249999999994,
+            //     "end_x": 71.24125000000001,
+            //     "start_y": -4.743750000000006,
+            //     "end_y": -35.74375
+            // }
+
+            //自动驾驶，t形状，蓝天背景
+            // extent = {
+            //     "start_x": -32.42875,
+            //     "end_x": -3.9287500000000017,
+            //     "start_y": 61.606874999999995,
+            //     "end_y": 33.106875
+            // }
+
+            //1-1自动驾驶，蓝绿区域对比
+            // extent = {
+            //     "start_x": -0.4999999999999929,
+            //     "end_x": 20.75,
+            //     "start_y": 30.25,
+            //     "end_y": 8.999999999999993
+            // }
+            //1-2自动驾驶，有蓝天背景的鲁棒性比较低
+            // extent = {
+            //     "start_x": 15.608623437500011,
+            //     "end_x": 21.507373437500014,
+            //     "start_y": 25.1482515625,
+            //     "end_y": 19.2495015625
+            // }
+
+            //自动驾驶，拐弯内测有黑块鲁棒性更加高
+            // extent = {
+            //     "start_x": -16.108999999999998,
+            //     "end_x": -14.508999999999999,
+            //     "start_y": 15.115000000000002,
+            //     "end_y": 13.515000000000002
+            // }
+
+            // extent = {
+            //     "start_x": -7.564889406571943,
+            //     "end_x": 34.362600550819835,
+            //     "start_y": 83.30722306603609,
+            //     "end_y": 41.37973310864433
+            // }
+
+            // extent = {
+            //     "start_x": -4.631846770880148,
+            //     "end_x": 30.664989842294762,
+            //     "start_y": 78.90541064457427,
+            //     "end_y": 43.60857403139937
+            // }
+
+            //自动驾驶高鲁棒性区域
+            // extent = {
+            //     "start_x": -51.5,
+            //     "end_x": -24.500000000000007,
+            //     "start_y": 60.75,
+            //     "end_y": 33.75
+            // }
+            //中间隔开的鲁棒性区域
+            // extent = {
+            //     "start_x": -45.92825443786982,
+            //     "end_x": -29.951923076923084,
+            //     "start_y": 55.417899408284015,
+            //     "end_y": 39.44156804733728
+            // }
+            // 半包围区域
+            // extent = {
+            //     "start_x": -44.949704142011825,
+            //     "end_x": -28.9733727810651,
+            //     "start_y": 61.84837278106507,
+            //     "end_y": 45.872041420118336
+            // }
+
+            //坐标范围，注意左上角为起点
+            // extent = {
+            //     "start_x": -60.0,
+            //     "end_x": 60.0,
+            //     "start_y": 60.0,
+            //     "end_y": -60.0
+            // }
+
+            // 新船子
+            // extent = {
+            //     "start_x": 27,
+            //     "end_x": 28.799999999999997,
+            //     "start_y": -38.099999999999994,
+            //     "end_y": -39.900000000000006
+            // }
+
+            // 白色飞机区域
+            // extent = {
+            //     "start_x": 19.088028750000007,
+            //     "end_x": 19.865028750000008,
+            //     "start_y": -12.519502500000007,
+            //     "end_y": -13.29650250000001
+            // }
+
+            // 船
+            // extent = {
+            //     "start_x": 18.450000000000003,
+            //     "end_x": 54.3,
+            //     "start_y": -24.150000000000006,
+            //     "end_y": -60
+            // }
+            // 平移后的飞机和鸟
+            // extent = {
+            //     "start_x": 1.6901250000000054,
+            //     "end_x": 37.540125,
+            //     "start_y": -7.30050000000001,
+            //     "end_y": -43.1505
+            // }
+
+            // 卡车
+            // extent = {
+            //     "start_x": 35.849999999999994,
+            //     "end_x": 56.39999999999999,
+            //     "start_y": 46.8,
+            //     "end_y": 26.25
+            // }
+
+            // 马子 鲁棒性低的地方有个共同特点，有人，高的有个特点，图片里基本只有马
+            // extent = {
+            //     "start_x": -36.3,
+            //     "end_x": -24.45,
+            //     "start_y": 55.8,
+            //     "end_y": 43.949999999999996
+            // }
+            // 马2 那些样子有些怪异的马，它们鲁棒性低，而且有些长得奇怪的东西，却被分类器分类为狗？
+            // extent = {
+            //     "start_x": -31.056375,
+            //     "end_x": -28.523437499999996,
+            //     "start_y": 53.90399999999999,
+            //     "end_y": 51.371062499999994
+            // }
+            // 用这个马子
+            // extent = {
+            //     "start_x": -29.36775,
+            //     "end_x": -27.4273125,
+            //     "start_y": 52.793062500000005,
+            //     "end_y": 50.852625
+            // }
+
+            // 船
+            // extent = {
+            //     "start_x": 18.450000000000003,
+            //     "end_x": 54.3,
+            //     "start_y": -24.150000000000006,
+            //     "end_y": -60
+            // }
+            // 船2
+            // extent = {
+            //     "start_x": 45.21598745190171,
+            //     "end_x": 46.234703000600305,
+            //     "start_y": -38.929565041981505,
+            //     "end_y": -39.94828059068009
+            // }
+            // 船22 有车
+            // extent = {
+            //     "start_x": 46.02907786875,
+            //     "end_x": 46.640320368750004,
+            //     "start_y": -38.988805696875005,
+            //     "end_y": -39.600048196875
+            // }
+            // 飞机
+            // extent = {
+            //     "start_x": 3.4378125000000086,
+            //     "end_x": 39.2878125,
+            //     "start_y": 4.44037499999999,
+            //     "end_y": -31.409625000000013
+            // }
+
+            // 定义X轴scale
+            xScale = d3.scaleLinear()
+                .domain([extent.start_x, extent.end_x])
+                .range([0, heatMap_width]);
+            // 定义Y轴scale
+            yScale = d3.scaleLinear()
+                .domain([extent.start_y, extent.end_y])
+                .range([0, heatMap_height]);
+
+            bins = document.getElementById("resolution").value;
+
+            var model_id = "M1"
+            var dataset_type = document.getElementById("select_dataset_type_selection").value //在Document.querySelector()通过id获取才需要加#
+            var model_name = document.getElementById("select_model_selection").value
+            document.getElementById("model_title_name").innerHTML = model_name
+            await prepare_shared_data(dataset_type)
+            await prepare_DNN_data(model_id, model_name)
+
+            //获取鲁棒性(鲁棒性等信息保存在全局变量中)
+            get_information_from_python(extent = extent, xScale = xScale, yScale = yScale).then(function () {
+                //绘制热力图
+                change_heatMap()
+                //绘制网格图片概览
+                change_imageGrid()
+                //绘制类别概览
+                change_imageTypeGrid()
+                //默认是平移操作
+                panBtn.click()
+            })
+
+        }
+    </script>
+
+
+
+
+
+
+    <!-- 1111111111111111111111111111111111111111111111111111111111111111 -->
+    <!-- 引用别人的script包 -->
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-contour@2/dist/d3-contour.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+        crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3-color.v1.min.js"></script>
+    <script src="https://d3js.org/d3-hsv.v0.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-color@3"></script>
+    <!-- axios 前后端交互js-->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!--########################引入自己的js包################### -->
+    <!-- 绘制热力图的js -->
+    <script type="text/javascript" src="./static/my_js/heat_map.js"></script>
+    <!-- 绘制网格图片的js -->
+    <script type="text/javascript" src="./static/my_js/image_grid.js"></script>
+    <!-- 绘制类别的js -->
+    <script type="text/javascript" src="./static/my_js/image_type_grid.js"></script>
+    <!-- 联系前后端的js -->
+    <script type="text/javascript" src="./static/my_js/front_and_backend.js"></script>
+    <!-- 控制缩放的js -->
+    <script type="text/javascript" src="./static/my_js/zoom.js"></script>
+    <!-- 一些控制的js -->
+    <script type="text/javascript" src="./static/my_js/control.js"></script>
+
+</body>

@@ -1,0 +1,24 @@
+.kjl_bg_teal_300{
+    background-color: #79dfc1;
+}
+
+.kjl_bg_teal_200{
+    background-color: #a6e9d5;
+}
+
+.kjl_line{
+    stroke-width: 3px;
+    stroke: black;
+    opacity: 0.3;
+}
+
+.klj-setting-threhold-modal {
+    right: auto;
+    top: 5%;
+    left: 80%;
+}
+
+/* .tset{
+    color: #fee5d9, #fdd1c1, #fcbba1, #faa57f, #f9845b, #f7683c, #f03b20, #e31a1c, #bd0026, #af083a;
+} */
+

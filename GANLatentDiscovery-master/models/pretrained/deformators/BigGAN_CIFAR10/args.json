@@ -1,0 +1,1 @@
+{"gan_type": "BigGAN_CIFAR10", "target_class": 0, "deformator": "ortho", "max_latent_ind": 120}

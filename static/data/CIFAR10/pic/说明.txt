@@ -1,0 +1,17 @@
+origin_50k指的是由cifar10数据集中保存下来的50k张训练数据图片
+
+random_50k指的是由生成模型，随机抽取符合正态分布的向量生成的50k张图片,FID值为4.046567991159236
+
+random_100k指的是由生成模型，随机抽取符合正态分布的向量生成的100k张图片,FID值为3.8443577215997493
+
+random_200k指的是由生成模型，随机抽取符合正态分布的向量生成的200k张图片,fid值3.755490458862994
+
+grid_images指的是右边图片视图概览的400张图片
+
+
+random_50k_png
+对应BigGAN_random_png_208z_50000_2023-08-30.pt
+对应BigGAN_random_png_208z_50000_2023-08-30_labels.pt
+对应2D_kdTree_50000_png_2023-08-30.pt
+对应2D_kdTree_50000_png_2023-3-27_cof.pt
+(# 图片原始输入，resnet20,5个档次，0.1：1 './temp/pic/AE/autoencoder_model_use_image_20.pth')
