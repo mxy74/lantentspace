@@ -1,0 +1,17 @@
+model=G-best-weights-step=58000.pth 
+这个是从https://huggingface.co/Mingguksky/PyTorch-StudioGAN/tree/main/studiogan_official_ckpt/Efficient-CIFAR10-30%25/CIFAR10_30p-BigGAN-train-2022_02_22_12_10_53
+这里下载的
+
+model=G-best-weights-step=132000.pth 来自：https://huggingface.co/Mingguksky/PyTorch-StudioGAN/tree/main/studiogan_official_ckpt/Efficient-CIFAR10-100%25/CIFAR10-BigGAN-ADA-train-2022_02_11_07_19_25
+
+model=G-best-weights-step=174000.pth 来自：https://huggingface.co/Mingguksky/PyTorch-StudioGAN/tree/main/studiogan_official_ckpt/Efficient-CIFAR10-100%25/CIFAR10-BigGAN-LeCam-train-2022_02_02_21_57_59
+
+model=G-best-weights-step=188000.pth 来自：https://huggingface.co/Mingguksky/PyTorch-StudioGAN/tree/main/studiogan_official_ckpt/Efficient-CIFAR10-100%25/CIFAR10-BigGAN-APA-train-2022_02_11_07_19_25
+
+model=G-best-weights-step=392000.pth 来自：https://huggingface.co/Mingguksky/PyTorch-StudioGAN/tree/main/studiogan_official_ckpt/Efficient-CIFAR10-100%25/CIFAR10-BigGAN-DiffAug-LeCam-train-2022_02_12_18_59_01
+
+model=G-best-weights-step=162000.pth 是自己训练的
+
+
+
+
