@@ -31,7 +31,11 @@ function draw_imageGrid() {
     // console.log("image_grid.js中img_coords_lst_400_dict: ", img_coords_lst_400_dict)
     // console.log("image_grid.js中robustness_dict: ", robustness_dict)
 
-
+    var img_fore_labels_lst_400 = img_DNN_for_output_lst_400_dict["M1"]
+    console.log(img_fore_labels_lst_400)
+    labels_colors = { 0: '#a6cee3', 1: '#1f78b4', 2: '#b2df8a',
+        3: '#33a02c', 4: '#fb9a99', 5: '#e31a1c', 6: '#fdbf6f',
+        7: '#ff7f00', 8: '#cab2d6', 9: '#6a3d9a' };
     var img_coords_lst_400 = img_coords_lst_400_dict["M1"]
     //添加边框
     svg_imageGrid_g.selectAll("rect")
@@ -49,9 +53,11 @@ function draw_imageGrid() {
         .data(img_coords_lst_400)
         .join("rect")
         .attr("class", "img_border_rect")
-        .attr("fill", "none")
-        .attr("stroke", "black")
-        .attr("stroke-width", "1")
+        .attr("fill", (d, i) => labels_colors[parseInt(img_fore_labels_lst_400[i])])
+        .attr("stroke", "white")
+        .attr("stroke-width", "0.5")
+        // .attr("stroke", (d, i) => labels_colors[img_fore_labels_lst_400[i]]) // 根据类别信息设置边框颜色
+        // .attr("stroke-width", "3") // 设置边框宽度为2像素
         .attr("height", rectWidth)
         .attr("width", rectWidth)
         .attr("x", (d, i) => rectWidth * (i % 20))
@@ -76,10 +82,10 @@ function draw_imageGrid() {
         .join("image")
         .attr("number", (d, i) => i) //方便后续定位图片
         .attr("href", (d, i) => `../static/data/${dataset_type}/pic/grid_fore_images/grid_fore_image_${i}.png?t=` + Math.random())
-        .attr("height", rectWidth)
-        .attr("width", rectWidth)
-        .attr("x", (d, i) => rectWidth * (i % 20))
-        .attr("y", (d, i) => rectWidth * Math.floor(i / 20))
+        .attr("height", rectWidth-6)
+        .attr("width", rectWidth-6)
+        .attr("x", (d, i) => rectWidth * (i % 20)+3)
+        .attr("y", (d, i) => rectWidth * Math.floor(i / 20)+3)
         .attr("data-bs-toggle", "tooltip")
         .attr("title", "image")
         .attr("border", "5")

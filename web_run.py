@@ -44,7 +44,6 @@ dataset_type = ""
 # 反距离系数
 idw_p = 50
 
-
 app = Flask(__name__, template_folder="./templates", static_folder="./static")
 
 
@@ -94,15 +93,14 @@ def prepare_shared_data():
 
         # kjl测试superviced-cnn-ae####################################start
         # 原始tsne降维
-        # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2023-08-30.pt"
+        tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2023-08-30.pt"
         # AE加入confidence损失
-        # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-25.pt"
-        tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-27_cof.pt"
+        # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-27_cof.pt"
         data_z_path = "./static/data/CIFAR10/latent_z/BigGAN_random_png_208z_50000_2023-08-30.pt"
         label_path = "./static/data/CIFAR10/labels/BigGAN_random_png_208z_50000_2023-08-30_labels.pt"
         tree_2D = torch.load(tree_2D_path)
         dict_zs = torch.load(data_z_path, map_location="cpu")  # 因为我之前保存数据到了GPU上，所以要回到cpu上才不会出错
-        data_z_labels = torch.load(label_path,map_location="cpu")
+        data_z_labels = torch.load(label_path, map_location="cpu")
         ##############################################################end
 
         # kjl测试VAE####################################################start
@@ -331,6 +329,7 @@ def get_information_data():
     img_DNN_output_lst_400_dict = {}
     img_DNN_for_output_lst_400_dict = {}
     img_coords_lst_400_dict = {}
+    conf_matrix_dic = {}
     print("Global_DNN_model_dict.keys: ", Global_DNN_model_dict.keys())
     # 循环遍历模型字典中的每一个
     copy_dict = Global_DNN_model_dict.copy()  # 需要复制一下，避免运行时添加字典出错
@@ -339,7 +338,7 @@ def get_information_data():
         # Rob_predictor = Global_rob_predictor_dict[key]
         # CAMmethod = Global_CAM_method_dict[key]
         # robustness = my_tools.get_robustness_data(coordinates, data_2D, dict_zs, G=G, DNN_model=DNN_model, Rob_predictor=Rob_predictor)
-        #师兄的部分
+        # 师兄的部分
         # robustness, img_labels_lst_400, img_coords_lst_400 = my_tools.get_information_other(coordinates, tree_2D, dict_zs, G=G, DNN_model=DNN_model, Rob_predictor=Rob_predictor, dataset_type=dataset_type, idw_p=idw_p)
         # 对前景图使用CAM，然后贴到back上
         # confidence_imgs, confidence_fore_imgs, img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400 = my_tools.get_information_mix_conf(
@@ -347,10 +346,10 @@ def get_information_data():
         #     idw_p=idw_p,
         #     mask_threshold=0.5)
         # 不对前景使用cam，背景取一个方块
-        confidence_imgs, confidence_fore_imgs, img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400 = my_tools.get_information_backmix(
-            coordinates, tree_2D, dict_zs, data_z_labels, G=G, DNN_model=DNN_model,  dataset_type=dataset_type,
-            idw_p=idw_p,
-            mask_threshold=0.25)
+        confidence_imgs, confidence_fore_imgs, img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400, \
+            conf_matrix_list = my_tools.get_information_backmix(
+            coordinates, tree_2D, dict_zs, data_z_labels, G=G, DNN_model=DNN_model,
+            dataset_type=dataset_type, idw_p=idw_p, mask_threshold=0.25)
         # robustness_dict[key] = list(format(float(n), '.3f')  for n in robustness)
         confidence_dict[key] = list(format(float(n), '.3f') for n in confidence_imgs)
         confidence_fore_dict[key] = list(format(float(n), '.3f') for n in confidence_fore_imgs)
@@ -358,6 +357,7 @@ def get_information_data():
         img_DNN_for_output_lst_400_dict[key] = list(format(float(n), '.3f') for n in foreimg_labels_lst_400)
         img_coords_lst_400_dict[key] = list(
             [format(float(n[0]), '.3f'), format(float(n[1]), '.3f')] for n in img_coords_lst_400)
+        conf_matrix_dic[key] = conf_matrix_list
         # print(f'%s的51号类别：%.2f'%(key, float(img_DNN_output_lst_400_dict[key][51])))
     return jsonify(
         {
@@ -366,7 +366,8 @@ def get_information_data():
             "confidence_fore_dict": confidence_fore_dict,
             "img_DNN_output_lst_400_dict": img_DNN_output_lst_400_dict,  # 400张图片对应的类别
             "img_DNN_for_output_lst_400_dict": img_DNN_for_output_lst_400_dict,
-            "img_coords_lst_400_dict": img_coords_lst_400_dict  # 400张图片对应的坐标（后面用来当作图片的唯一id）
+            "img_coords_lst_400_dict": img_coords_lst_400_dict,  # 400张图片对应的坐标（后面用来当作图片的唯一id）
+            "conf_matrix_dic": conf_matrix_dic   # 混淆矩阵
         })
 
 
@@ -395,6 +396,7 @@ def get_image_information():
                                                                             Rob_predictor=Rob_predictor,
                                                                             img_name=img_name,
                                                                             dataset_type=dataset_type, idw_p=idw_p)
+        # 取指数运算
         soft_max = nn.Softmax(dim=1)
         soft_layer = soft_max(layer)[0]
         # print("soft_layer: ", soft_layer)
@@ -403,7 +405,7 @@ def get_image_information():
         img_robustness = float(img_robustness)
         img_robustness_dict[key] = max(img_robustness, 0)
         layer_dict[key] = list([format(float(n), '.5f')] for n in soft_layer)
-        print("confidence:",layer)
+        print("confidence:", layer)
         print("softmax_conf:", layer_dict)
     return jsonify(
         {
@@ -431,7 +433,8 @@ def evaluate_image():
         DNN_model = Global_DNN_model_dict[key]
         Rob_predictor = Global_rob_predictor_dict[key]
 
-        label, img_robustness, layer = my_tools.evaluate_img(img_number, img_type, img_name=img_name, G=G, DNN_model=DNN_model,
+        label, img_robustness, layer = my_tools.evaluate_img(img_number, img_type, img_name=img_name, G=G,
+                                                             DNN_model=DNN_model,
                                                              Rob_predictor=Rob_predictor, dataset_type=dataset_type)
         soft_max = nn.Softmax(dim=1)
         soft_layer = soft_max(layer)[0]

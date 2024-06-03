@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import sys
 import torchvision.transforms.functional as TF
+from sklearn.metrics import confusion_matrix
 
 python_files_dir = "./python_files/"  # python工具包位置
 sys.path.append(python_files_dir)
@@ -789,8 +790,12 @@ def get_information(coordinates, tree_2D, dict_zs, G, DNN_model, Rob_predictor, 
 
 
 def get_backmix(z, G, DNN_model, mask_threshold, dataset_type, background_img):
+    time7 = time.time()
+
     imgs = G(z)
     # DNN_model.layer3.register_forward_hook(get_activation('layer3'))
+    time7 = time.time()
+    # print("生成图片消耗时间：", time6 - time5)
 
     layers = DNN_model(imgs)  # 分类模型分类图片
     # CAMlayer = activation['layer3']
@@ -893,16 +898,16 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
     print("取z中.....")
     time3 = time.time()
 
-    zs, labels = get_zs_idw_class(coordinates, tree_2D, dict_zs, data_z_labels, p=idw_p)
+    zs, zs_labels = get_zs_idw_class(coordinates, tree_2D, dict_zs, data_z_labels, p=idw_p)
 
-    zs_datasets = Mydata_sets(zs,labels)
+    zs_datasets = Mydata_sets(zs,zs_labels)
     # 不需要前向传播，一次可以多处理一些
     zs_loader = DataLoader(zs_datasets, batch_size=1, shuffle=False, num_workers=0)  # 指定读取配置信息
     time4 = time.time()
     print("取z消耗时间：", time4 - time3)
     sys.stdout.flush()
     print("zs.shape:", zs.shape)
-    print("labels shape", labels.shape)
+
 
     first = 0  # 判断是否第一次进入循环
     print("生成图片中.....")
@@ -935,7 +940,10 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
 
                 same_labels_mask_fore = torch.eq(fore_label, batch_labels.to(device))
 
-                # 将不同标签对应的置信度设为负值
+                #
+
+
+
                 max_value = torch.where(same_labels_mask, max_value, -max_value)
                 fore_max_value = torch.where(same_labels_mask_fore, fore_max_value, -fore_max_value)
 
@@ -1003,6 +1011,19 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
         print("all_fore_imgs.shape: ", all_fore_imgs.shape)
         print("labels.shape: ", labels.shape)
         print("fore_labels.shape: ", fore_labels.shape)
+        print("zs_labels shape", zs_labels.shape)
+        # 获取混淆矩阵
+        # 将标签转换为NumPy数组
+        fore_labels_np = fore_labels.cpu().numpy()
+        zs_labels_np = zs_labels.cpu().numpy()
+
+        # 计算混淆矩阵
+        num_classes = 10
+        conf_matrix = confusion_matrix(zs_labels_np, fore_labels_np, labels=np.arange(num_classes))
+
+        # 将混淆矩阵转换为嵌套列表（用于JSON序列化）
+        conf_matrix_list = conf_matrix.tolist()
+
         # print("CAMlayers.shape: ", CAMlayers.shape)
         # print("binary_cams.shape: ", binary_cams.shape)
 
@@ -1065,7 +1086,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                './static/data/' + dataset_type + '/pic/grid_fore_images_tensor/save_generate_fore_imgs_tensor.pt')
 
     torch.save(zs_lst_400, "./临时垃圾-随时可删/向量保存/zs_lst_400.pt")
-    return confidence_imgs.detach().cpu().numpy(), confidence_fore_imgs.detach().cpu().numpy(), img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400
+    return confidence_imgs.detach().cpu().numpy(), confidence_fore_imgs.detach().cpu().numpy(), img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400,conf_matrix_list
 
 
 # 分类过程中获取类别激活图，二值掩码，获得只包括前景的图片

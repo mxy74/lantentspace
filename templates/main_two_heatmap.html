@@ -208,7 +208,7 @@
                         </div>
 
                         <!-- 模型说明 -->
-                        <div id="div_model_name" style="display:none">
+                        <div id="div_model_name">
                             <div class="div_model_info_p">
                                 <P class="title_small" id="model_title_name">ResNet20</P>
                             </div>
@@ -217,7 +217,7 @@
                             </div>
                         </div>
                         <!-- 图片对比 -->
-                        <div id="div_compare_pic" style="display: none;">
+                        <div id="div_compare_pic" style="display: None;">
                             <div class="div_imgcard_info_p">
                                 <P class="title_small"><i class="bi bi-geo-alt-fill"></i>Image1</P>
                             </div>
@@ -227,12 +227,12 @@
                         </div>
 
                         <!-- 一根较粗的线 -->
-<!--                        <div id="div_bottom_line1"></div>-->
-
-<!--                        <p class="title_small" id="task_category">Category</p>-->
+                        <div id="div_bottom_line1"></div>
 
                         <div class="div_imgcard_info" style="display: flex;">
-
+                            <div class="div_imgcard_info_title">
+                                <p class="title_small" id="task_category">Category</p>
+                            </div>
                             <div class="div_imgcard_info_p">
                                 <P class="imgcard_variable_p" id="classified-as_1"></P>
                             </div>
@@ -240,11 +240,11 @@
                                 <P class="imgcard_variable_p" id="classified-as_2"></P>
                             </div>
                         </div>
-                        <p class="title_small" style="display: none;" >Robustness</p>
-                        <div class="div_imgcard_info_rob" id="div_robustness" style="display: none;">
-<!--                            <div class="div_imgcard_info_title">-->
-<!--                                -->
-<!--                            </div>-->
+
+                        <div class="div_imgcard_info" id="div_robustness" style="display: flex;">
+                            <div class="div_imgcard_info_title">
+                                <p class="title_small">Robustness</p>
+                            </div>
                             <div class="div_imgcard_info_p">
                                 <p class="imgcard_variable_p" id="predicted-robustness-value_1"></p>
                             </div>
@@ -257,7 +257,6 @@
 
 
                         <p class="title_small" id="p_probability_istribution">Probability Distribution</p>
-
                         <div id="svgContainer_probability_distribution">
                             <!-- 鲁棒性分布svg -->
                             <svg id="confidence_distribution">
@@ -266,20 +265,6 @@
                                 <g id="bars_2"></g>
                             </svg>
                         </div>
-
-                        <div id="div_bottom_line3"></div>
-<!--                        <p class="title_small" id="confusion_matrix">Confusion Matrix</p>-->
-                        <p class="title imgcard">Confusion Matrix</p>
-
-                        <div id="svgContainer_confusion_matrix" style="display: block;">
-                            <svg id="confusion_matrix_svg">
-<!--                                    <g id="imageTypeGrid_g_right"></g>-->
-                                    <!-- crop裁剪矩形 -->
-<!--                                    <rect id="selection_inner_rect_right"></rect>-->
-                            </svg>
-                        </div>
-
-
 
 
                         <p class="title_small" id="p_semantic_transition" style="display: none;">Semantic Transitions
@@ -312,51 +297,94 @@
                                     <g id="imageCompare_g_right" style="z-index: 100;"></g>
                                 </svg>
                             </div>
-<!--                        图片网格 -->
-<!--                            <div id="svgContainer_imageGrid_right" style="display: none;">-->
-<!--                                <svg id="imageGrid_svg_right">-->
-<!--                                    <g id="imageGrid_g_right"></g>-->
-<!--                                    &lt;!&ndash; crop裁剪矩形 &ndash;&gt;-->
-<!--                                    <rect id="selection_inner_rect_right"></rect>-->
-<!--                                </svg>-->
+                       <!-- 图片网格 -->
+                            <div id="svgContainer_imageGrid_right" style="display: none;">
+                                <svg id="imageGrid_svg_right">
+                                    <g id="imageGrid_g_right"></g>
+                                    <!-- crop裁剪矩形 -->
+                                    <rect id="selection_inner_rect_right"></rect>
+                                </svg>
 
-<!--                            </div>-->
-<!--                            &lt;!&ndash; 类别网格 &ndash;&gt;-->
-<!--                            <div id="svgContainer_typeGrid_right" style="display: none;">-->
-<!--                                <svg id="imageTypeGrid_svg_right">-->
-<!--                                    <g id="imageTypeGrid_g_right"></g>-->
-<!--                                    &lt;!&ndash; crop裁剪矩形 &ndash;&gt;-->
-<!--                                    <rect id="selection_inner_rect_right"></rect>-->
-<!--                                </svg>-->
-<!--                            </div>-->
-<!--                            <div id="svgContainer_classGrid_2" style="display: none;"></div>-->
+                            </div>
+                            <!-- 类别网格 -->
+                            <div id="svgContainer_typeGrid_right" style="display: none;">
+                                <svg id="imageTypeGrid_svg_right">
+                                    <g id="imageTypeGrid_g_right"></g>
+                                    <!-- crop裁剪矩形 -->
+                                    <rect id="selection_inner_rect_right"></rect>
+                                </svg>
+                            </div>
+                            <div id="svgContainer_classGrid_2" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
                 <!-- #########################中右（右侧菜单栏）########################## -->
                 <div id="middle_right_menu" class="col-auto border rounded-2"
                     style="padding: 0px; margin-top:2px; margin-bottom: 2px;">
-                    <div id="div_rightControlContainer" style="position: relative; height: 100%;">
+                    <div id="div_rightControlContainer" style="position: relative; height: 100%; width: 150px;">
                         <!-- <button type="button" class="btn btn-outline-primary" id="btn_view_switch" data-bs-toggle="tooltip" title="Mode Switch">
                             <i class="bi bi-grid-3x3-gap-fill"></i>
                         </button> -->
                         <!--change部分在control.js里边-->
-<!--                        <div id="div_switch_view_right">-->
-<!--                            <div>-->
-<!--                                <input class="input_radio" type="radio" id="radio_heatmap_right" name="radio_view_right" checked>-->
-<!--                                <label class="form-check-label" for="radio_view">Heatmap</label>-->
-<!--                            </div>-->
-<!--                            <div>-->
-<!--                                <input class="input_radio" type="radio" id="radio_image_right" name="radio_view_right">-->
-<!--                                <label class="form-check-label" for="radio_view">Image</label>-->
-<!--                            </div>-->
+                        <div id="div_switch_view_right">
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_heatmap_right" name="radio_view_right" checked>
+                                <label class="form-check-label" for="radio_view">Heatmap</label>
+                            </div>
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_image_right" name="radio_view_right">
+                                <label class="form-check-label" for="radio_view">Image</label>
+                            </div>
 
-<!--                            <div>-->
-<!--                                <input class="input_radio" type="radio" id="radio_classification_right" name="radio_view_right">-->
-<!--                                <label class="form-check-label" for="radio_view">Label</label>-->
-<!--                            </div>-->
-<!--                        </div>-->
-
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_classification_right" name="radio_view_right">
+                                <label class="form-check-label" for="radio_view">Label</label>
+                            </div>
+                        </div>
+                        <!-- 原版配色 -->
+                        <!-- <div id="types" style="display: none;">
+                            <div class="color_block" id="color0" style="background-color:#8dd3c7; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color1" style="background-color:#ffffb3; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color2" style="background-color:#bebada; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color3" style="background-color:#fb8072; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color4" style="background-color:#80b1d3; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color5" style="background-color:#fdb462; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color6" style="background-color:#b3de69; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color7" style="background-color:#fccde5; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color8" style="background-color:#d9d9d9; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                            <div class="color_block" id="color9" style="background-color:#bc80bd; "></div>
+                            <div class="classes_name_div">
+                                <p class="classes_name"></p>
+                            </div>
+                        </div> -->
+                        <!-- 深色 -->
                         <!-- 热力图颜色 -->
                         <div id="thresholds_right" style="display: block;">
                             <div class="color_block_rob" id="threshold0_right" style="background-color:#fee5d9; "></div>
@@ -455,7 +483,7 @@
                          <div class="panal" id="div_original_imageGrid">
                             <!-- #########################中心（热力图概览）######################### -->
                             <div id="svgContainer_heatMapGrid" class="col-auto border rounded-2"
-                                style="padding: 0px; margin-top:2px; margin-bottom: 2px;display: none">
+                                style="padding: 0px; margin-top:2px; margin-bottom: 2px;display: block">
                                 <!-- 中间的概览 -->
                                 <svg id="center_heatMap_svg">
                                     <!-- 热力图g -->
@@ -474,37 +502,20 @@
                             </div>
                              <!-- 图片网格 -->
 
-<!--                            <div id="svgContainer_imageGrid" style="display: none;">-->
-<!--                                <svg id="imageGrid_svg">-->
-<!--                                    <g id="imageGrid_g"></g>-->
-<!--                                    &lt;!&ndash; crop裁剪矩形 &ndash;&gt;-->
-<!--                                    <rect id="selection_inner_rect"></rect>-->
-<!--                                </svg>-->
-
-<!--                            </div>-->
-<!--                            &lt;!&ndash; 类别网格 &ndash;&gt;-->
-<!--                            <div id="svgContainer_typeGrid" style="display: none;">-->
-<!--                                <svg id="imageTypeGrid_svg">-->
-<!--                                    <g id="imageTypeGrid_g"></g>-->
-<!--                                    &lt;!&ndash; crop裁剪矩形 &ndash;&gt;-->
-<!--                                    <rect id="selection_inner_rect"></rect>-->
-<!--                                </svg>-->
-<!--                            </div>-->
-                             <!-- 图片网格 -->
-                            <div id="svgContainer_imageGrid_right" style="display: block;">
-                                <svg id="imageGrid_svg_right">
-                                    <g id="imageGrid_g_right"></g>
+                            <div id="svgContainer_imageGrid" style="display: none;">
+                                <svg id="imageGrid_svg">
+                                    <g id="imageGrid_g"></g>
                                     <!-- crop裁剪矩形 -->
-                                    <rect id="selection_inner_rect_right"></rect>
+                                    <rect id="selection_inner_rect"></rect>
                                 </svg>
 
                             </div>
                             <!-- 类别网格 -->
-                            <div id="svgContainer_typeGrid_right" style="display: none;">
-                                <svg id="imageTypeGrid_svg_right">
-                                    <g id="imageTypeGrid_g_right"></g>
+                            <div id="svgContainer_typeGrid" style="display: none;">
+                                <svg id="imageTypeGrid_svg">
+                                    <g id="imageTypeGrid_g"></g>
                                     <!-- crop裁剪矩形 -->
-                                    <rect id="selection_inner_rect_right"></rect>
+                                    <rect id="selection_inner_rect"></rect>
                                 </svg>
                             </div>
                          </div>
@@ -513,7 +524,7 @@
                 <!-- #########################中心（中间菜单栏）######################### -->
                 <div id="middle_center_menu" class="col-auto border rounded-2"
                     style="padding: 0px; margin-top:2px; margin-bottom: 2px;">
-                    <div id="div_middleControlContainer" style="position: relative; height: 100%;">
+                    <div id="div_middleControlContainer" style="position: relative; height: 100%; width: 150px;">
                         <div id="div_switch_model" style="display: none;">
                             <!-- 单选按钮通过name来确定它们是不是一组的，chatgpt说的 -->
                             <div style="display: none;">
@@ -534,12 +545,12 @@
 
                         </div>
                         <div id="div_switch_view">
-<!--                            <div>-->
-<!--                                <input class="input_radio" type="radio" id="radio_heatmap" name="radio_view" checked>-->
-<!--                                <label class="form-check-label" for="radio_view">Heatmap</label>-->
-<!--                            </div>-->
                             <div>
-                                <input class="input_radio" type="radio" id="radio_image" name="radio_view" checked>
+                                <input class="input_radio" type="radio" id="radio_heatmap" name="radio_view" checked>
+                                <label class="form-check-label" for="radio_view">Heatmap</label>
+                            </div>
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_image" name="radio_view">
                                 <label class="form-check-label" for="radio_view">Image</label>
                             </div>
 
@@ -549,7 +560,7 @@
                             </div>
                         </div>
 <!--                        类别颜色-->
-                        <div id="types" style="display: block;">
+                        <div id="types" style="display: none;">
                             <div class="color_block" id="color0" style="background-color:#a6cee3; "></div>
                             <div class="classes_name_div">
                                 <p class="classes_name"></p>
@@ -595,7 +606,7 @@
 
 
                         <!-- 热力图颜色 -->
-                        <div id="thresholds" style="display: none;">
+                        <div id="thresholds" style="display: block;">
                             <div class="color_block_rob" id="threshold0" style="background-color:#fee5d9; "></div>
                             <div class="threshold_value_div">
                                 <p id="threshold-0-value" class="threshold_value"></p>
@@ -669,8 +680,7 @@
         var bins; //网格数量
         // 模型对应的数据
         // var robustness_dict, img_DNN_output_lst_400_dict, img_coords_lst_400_dict; //所有的图片对应的坐标都是一样的，就不用图片字典了
-        var robustness_dict, confidence_dict, confidence_fore_dict, img_DNN_for_output_lst_400_dict, img_DNN_output_lst_400_dict,
-            img_coords_lst_400_dict, conf_matrix_dic;
+        var robustness_dict, confidence_dict, confidence_fore_dict, img_DNN_for_output_lst_400_dict, img_DNN_output_lst_400_dict, img_coords_lst_400_dict;
         // 鲁棒性颜色
         // var color;
         // var color = ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a", "#de2d26", "#a50f15"];
@@ -1081,7 +1091,6 @@
             await prepare_shared_data(dataset_type)
             await prepare_DNN_data(model_id, model_name)
 
-
             //获取鲁棒性(鲁棒性等信息保存在全局变量中)
             get_information_from_python(extent = extent, xScale = xScale, yScale = yScale).then(function () {
                 //绘制热力图
@@ -1090,8 +1099,6 @@
                 change_imageGrid()
                 //绘制类别概览
                 change_imageTypeGrid()
-                // 绘制混淆矩阵
-                change_matrix()
                 //默认是平移操作
                 panBtn.click()
             })
@@ -1131,7 +1138,5 @@
     <script type="text/javascript" src="./static/my_js/zoom.js"></script>
     <!-- 一些控制的js -->
     <script type="text/javascript" src="./static/my_js/control.js"></script>
-    <!-- 绘制混淆矩阵的js -->
-    <script type="text/javascript" src="./static/my_js/matrix.js"></script>
 
 </body>

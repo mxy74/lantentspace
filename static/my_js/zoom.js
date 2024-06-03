@@ -26,6 +26,7 @@ function zoom_updata_all() {
     change_heatMap()
     //修改图片网格 (函数来自于image_grid.js)
     change_imageGrid()
+    change_matrix()
 
 }
 

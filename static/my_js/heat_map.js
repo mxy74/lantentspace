@@ -518,7 +518,7 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
         // color = ['#fee5d9', '#fdd1c1', '#fcbba1', '#faa57f', '#f07e5e', '#d9583c', '#b5352b', '#8b1a1a', '#620f0f', '#3e0a0a']
         // color = ['#fee5d9', '#feedc3', '#ffe8ad', '#ffe298', '#ffc375', '#ffa551', '#ff853b', '#ff5e28', '#ff3d1f', '#ff2a1a']
         // color = ['#fee5d9', '#fdd1c1', '#fcbba1', '#faa57f', '#f07e5e', '#d9583c', '#b5352b', '#8b1a1a', '#620f0f', '#3e0a0a']
-
+        //
         // color =  ['#fff5eb', '#fee6ce', '#fdd0a2', '#fdae6b', '#fd8d3c', '#f16913', '#d94801', '#a63603', '#7f2704']; //9-class Oranges
         // color = ['#fcfbfd', '#efedf5', '#dadaeb', '#bcbddc', '#9e9ac8', '#807dba', '#6a51a3', '#54278f', '#3f007d']; //9-class Purples
         // color = ['#f7fcf0', '#e0f3db', '#ccebc5', '#a8ddb5', '#7bccc4', '#4eb3d3', '#2b8cbe', '#0868ac', '#084081']; //9-class GnBu

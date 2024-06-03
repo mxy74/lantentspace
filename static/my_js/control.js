@@ -36,6 +36,7 @@ function control_updata_all_transition(x, y, length) {
     change_heatMap(true, args)
     //修改图片网格 (函数来自于image_grid.js)
     change_imageGrid()
+    change_matrix()
 
 }
 
@@ -84,6 +85,7 @@ datasetsSelect.addEventListener("change", async function () {
         change_imageGrid()
         //绘制类别概览
         change_imageTypeGrid()
+        change_matrix()
     })
 })
 
@@ -104,6 +106,7 @@ modelSelect1.addEventListener("change", async function () {
         change_heatMap()
         //绘制类别概览
         change_imageTypeGrid()
+        change_matrix()
     })
 })
 // 第二个模型
@@ -121,6 +124,7 @@ modelSelect2.addEventListener("change", async function () {
         change_heatMap()
         //绘制类别概览
         change_imageTypeGrid()
+        change_matrix()
     })
 })
 // 分辨率事件~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -647,16 +651,166 @@ brushBtn.addEventListener("click", function () {
 
 // 点击位置事件~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // 显示置信度函数
+// function show_confidence_tran(confidence, side) {
+//
+//     // console.log(index_max, index_max_2);
+//     const svg_width = 180;
+//     const svg_height = 280;
+//     const rect_height = 17;
+//     const margin = 10;
+//     const shift = 13;
+//     const max_width = 60
+//     const min_width = 0.1
+//
+//     // 创建置信度直方图svg
+//     const svg_confidence = d3.select("#svgContainer_probability_distribution")
+//         .select("#confidence_distribution")
+//         .attr("width", svg_width)
+//         .attr("height", svg_height)
+//     svg_confidence.select("#bars_1")
+//         .attr("class", "bars1")
+//         .attr("transform", "translate(4, 5)");
+//     svg_confidence.select("#labels")
+//         .attr("class", "labels")
+//         .attr("transform", "translate(90, 5)")
+//     svg_confidence.select("#bars_2")
+//         .attr("class", "bars2")
+//         .attr("transform", "translate(110, 5)")
+//
+//     if (side == "left") {
+//         //添加矩形
+//         d3.select('#bars_1')
+//             .selectAll('rect')
+//             .data(confidence)
+//             .join('rect')
+//             .attr('y', function (d, i) {
+//                 return i * (rect_height + margin);
+//             })
+//             .attr('fill', 'grey')
+//             .attr('height', rect_height)
+//             .attr("width", 0)
+//             .attr('x', function (d) {
+//                 return max_width + min_width;
+//             })
+//             .transition()
+//             .duration(2000)
+//             .attr('width', function (d) {
+//                 return d * max_width + min_width; //2是保底宽度
+//             })
+//             .attr('x', function (d) {
+//                 return max_width - d * max_width;
+//             })
+//         //添加文字
+//         d3.select('#bars_1')
+//             .selectAll('text')
+//             .data(confidence)
+//             .join('text')
+//             .attr("class", 'labels_text')
+//             .attr('y', function (d, i) {
+//                 return i * (rect_height + margin) + shift;
+//             })
+//             .text(function (d) {
+//                 return d;
+//             })
+//             .attr('x', function (d) {
+//                 return max_width + min_width;
+//             })
+//             .style("fill", function (d) {
+//                 if (d <= 0.5) {
+//                     return "black"
+//                 }
+//                 else {
+//                     return "red"
+//                 }
+//             })
+//             .transition()
+//             .duration(2000)
+//             .attr('x', function (d) {
+//                 if (d <= 0.5) {
+//                     return max_width - d * max_width;
+//                 }
+//                 else {
+//                     return max_width - d * max_width + 25;
+//                 }
+//
+//             })
+//
+//     } else if (side == "right") {
+//         //添加矩形
+//         d3.select('#bars_2')
+//             .selectAll('rect')
+//             .data(confidence)
+//             .join('rect')
+//             .attr('y', function (d, i) {
+//                 return i * (rect_height + margin);
+//             })
+//             .attr('fill', 'grey')
+//             .attr('height', rect_height)
+//             .attr("width", 0)
+//             .transition()
+//             .duration(2000)
+//             .attr('width', function (d) {
+//                 return d * max_width + min_width; //2是保底宽度
+//             })
+//         //添加文字
+//         d3.select('#bars_2')
+//             .selectAll('text')
+//             .data(confidence)
+//             .join('text')
+//             .attr("class", 'labels_text')
+//             .attr("x", 0)
+//             .attr('y', function (d, i) {
+//                 return i * (rect_height + margin) + shift;
+//             })
+//             .text(function (d) {
+//                 return d;
+//             })
+//             .style("fill", function (d) {
+//                 if (d <= 0.5) {
+//                     return "black"
+//                 }
+//                 else {
+//                     return "red"
+//                 }
+//             })
+//             .transition()
+//             .duration(2000)
+//             .attr('x', function (d) {
+//                 if (d <= 0.5) {
+//                     return d * max_width;
+//                 }
+//                 else {
+//                     return d * max_width - 25;
+//                 }
+//
+//             })
+//     }
+//
+//
+//     d3.select('#labels')
+//         .selectAll('text')
+//         .data(cifar10_classes) //cifar10_classes数组在image_type_grid.js中定义
+//         .join('text')
+//         .attr('y', function (d, i) {
+//             return i * (rect_height + margin) + shift;
+//         })
+//         .text(function (d) {
+//             return d;
+//         })
+//         .style('text-anchor', 'middle');
+//
+// }
+
 function show_confidence(confidence, side) {
 
     // console.log(index_max, index_max_2);
-    const svg_width = 180;
-    const svg_height = 280;
-    const rect_height = 17;
-    const margin = 10;
+    const svg_width = 400;
+    const svg_height = 160;
+    const rect_height = 18;
+    const margin = 18;
     const shift = 13;
-    const max_width = 60
-    const min_width = 0.1
+    const max_height = 35
+    const min_height = 0.1
 
     // 创建置信度直方图svg
     const svg_confidence = d3.select("#svgContainer_probability_distribution")
@@ -665,36 +819,45 @@ function show_confidence(confidence, side) {
         .attr("height", svg_height)
     svg_confidence.select("#bars_1")
         .attr("class", "bars1")
-        .attr("transform", "translate(4, 5)");
+        .attr("transform", "translate(20, 0)");
     svg_confidence.select("#labels")
         .attr("class", "labels")
-        .attr("transform", "translate(90, 5)")
+        .attr("transform", "translate(20, 70)")
     svg_confidence.select("#bars_2")
         .attr("class", "bars2")
-        .attr("transform", "translate(110, 5)")
+        .attr("transform", "translate(20, 95)")
 
     if (side == "left") {
+        // d3.select('#bars_1')
+        //     .selectAll('text')
+        //     .remove()
+        // d3.select('#bars_1')
+        //     .selectAll('rect')
+        //     .remove()
+        // d3.select('#bars_2')
+        //     .selectAll('text')
+        //     .remove()
+        // d3.select('#bars_2')
+        //     .selectAll('rect')
+        //     .remove()
         //添加矩形
         d3.select('#bars_1')
             .selectAll('rect')
             .data(confidence)
             .join('rect')
-            .attr('y', function (d, i) {
+            .attr('x', function (d, i) {
                 return i * (rect_height + margin);
             })
-            .attr('fill', 'grey')
-            .attr('height', rect_height)
-            .attr("width", 0)
-            .attr('x', function (d) {
-                return max_width + min_width;
-            })
+            .attr('fill', '#A1A1A1')
+            .attr('width', rect_height)
+            .attr("y", 70) // 初始化y为SVG底部,一定要初始化，才能有动画
             .transition()
-            .duration(2000)
-            .attr('width', function (d) {
-                return d * max_width + min_width; //2是保底宽度
+            .duration(0)
+            .attr('height', function (d) {
+                return d * max_height + min_height; //2是保底宽度
             })
-            .attr('x', function (d) {
-                return max_width - d * max_width;
+            .attr('y', function (d) {
+                return 70 - (d * max_height + min_height);
             })
         //添加文字
         d3.select('#bars_1')
@@ -702,14 +865,28 @@ function show_confidence(confidence, side) {
             .data(confidence)
             .join('text')
             .attr("class", 'labels_text')
-            .attr('y', function (d, i) {
-                return i * (rect_height + margin) + shift;
+            .attr("x", function (d, i) {
+                return i * (rect_height + margin) + rect_height / 2;
+            })
+            .attr('y', function (d) {
+                return 70 - (d * max_height + min_height) - shift; // 确保文字在条形图顶部
             })
             .text(function (d) {
-                return d;
-            })
-            .attr('x', function (d) {
-                return max_width + min_width;
+                                           // 检查是否为数组以及数组是否非空
+                if (Array.isArray(d) && d.length > 0) {
+                    // 将数组中的第一个元素转换为数字
+                    var num = parseFloat(d[0]);
+                    if (!isNaN(num)) {
+                        // 将数字格式化为三位小数
+                        return num.toFixed(3);
+                    } else {
+                        // 如果无法转换为数字，返回原始值
+                        return d[0];
+                    }
+                } else {
+                    // 如果不是数组或者是空数组，返回原始值
+                    return d;
+                }
             })
             .style("fill", function (d) {
                 if (d <= 0.5) {
@@ -719,17 +896,16 @@ function show_confidence(confidence, side) {
                     return "red"
                 }
             })
-            .transition()
-            .duration(2000)
-            .attr('x', function (d) {
-                if (d <= 0.5) {
-                    return max_width - d * max_width;
-                }
-                else {
-                    return max_width - d * max_width + 25;
-                }
-
+            .style("text-anchor", "middle")
+            // .transition()
+            // .duration(2000)
+            .attr("transform", function(d, i) {
+                // 计算旋转中心点
+                var x = i * (rect_height + margin) + rect_height / 2;
+                var y = 70 - (d * max_height + min_height) - shift / 2;
+                return `rotate(-35, ${x}, ${y})`; // 旋转-45度
             })
+            .attr("font-family", "Consolas, courier");
 
     } else if (side == "right") {
         //添加矩形
@@ -737,29 +913,48 @@ function show_confidence(confidence, side) {
             .selectAll('rect')
             .data(confidence)
             .join('rect')
-            .attr('y', function (d, i) {
+            .attr('x', function (d, i) {
                 return i * (rect_height + margin);
             })
-            .attr('fill', 'grey')
-            .attr('height', rect_height)
-            .attr("width", 0)
-            .transition()
-            .duration(2000)
-            .attr('width', function (d) {
-                return d * max_width + min_width; //2是保底宽度
+            .attr('fill', '#A1A1A1')
+            .attr("width", rect_height)
+            .attr('y', 0)
+            // .transition()
+            // .duration(0)
+            .attr('height', function (d) {
+                return d * max_height + min_height; //2是保底宽度
             })
+             // .attr('y', function (d) {
+             //    return (-5 + d * max_height + min_height); // 确保条形图从底部向上绘制
+            // });
         //添加文字
         d3.select('#bars_2')
             .selectAll('text')
             .data(confidence)
             .join('text')
             .attr("class", 'labels_text')
-            .attr("x", 0)
-            .attr('y', function (d, i) {
-                return i * (rect_height + margin) + shift;
+            .attr("x", function (d, i) {
+                return i * (rect_height + margin) + rect_height / 2;
+            })
+            .attr('y', function (d) {
+                return (d * max_height + min_height) + 10;
             })
             .text(function (d) {
-                return d;
+                                       // 检查是否为数组以及数组是否非空
+                if (Array.isArray(d) && d.length > 0) {
+                    // 将数组中的第一个元素转换为数字
+                    var num = parseFloat(d[0]);
+                    if (!isNaN(num)) {
+                        // 将数字格式化为三位小数
+                        return num.toFixed(3);
+                    } else {
+                        // 如果无法转换为数字，返回原始值
+                        return d[0];
+                    }
+                } else {
+                    // 如果不是数组或者是空数组，返回原始值
+                    return d;
+                }
             })
             .style("fill", function (d) {
                 if (d <= 0.5) {
@@ -769,17 +964,16 @@ function show_confidence(confidence, side) {
                     return "red"
                 }
             })
-            .transition()
-            .duration(2000)
-            .attr('x', function (d) {
-                if (d <= 0.5) {
-                    return d * max_width;
-                }
-                else {
-                    return d * max_width - 25;
-                }
-
+            .style("text-anchor", "middle")
+            // .transition()
+            // .duration(2000)
+            .attr("transform", function(d, i) {
+            // 计算旋转中心点
+            var x = i * (rect_height + margin) + rect_height / 2;
+            var y = (d * max_height + min_height) + shift/2;
+            return `rotate(-35, ${x}, ${y})`; // 旋转-45度
             })
+            .attr("font-family", "Consolas, courier");
     }
 
 
@@ -787,17 +981,18 @@ function show_confidence(confidence, side) {
         .selectAll('text')
         .data(cifar10_classes) //cifar10_classes数组在image_type_grid.js中定义
         .join('text')
-        .attr('y', function (d, i) {
-            return i * (rect_height + margin) + shift;
+        .attr('x', function (d, i) {
+            return i * (rect_height + margin) + rect_height / 2;
         })
         .text(function (d) {
             return d;
         })
+        .attr('y', 15) // 确保标签在顶部
         .style('text-anchor', 'middle');
 
 }
 // 这里不做模型对比，就显示一个模型的信息
-function show_confidence_single(confidence) {
+function show_confidence_single_tran(confidence) {
 
     // console.log(index_max, index_max_2);
     const svg_width = 180;
@@ -887,6 +1082,125 @@ function show_confidence_single(confidence) {
         .style('text-anchor', 'middle');
 
 }
+function show_confidence_single(confidence) {
+
+    // console.log(index_max, index_max_2);
+    const svg_width = 400;
+    const svg_height = 100;
+    const rect_height = 18;
+    const margin = 18;
+    const shift = 13;
+    const max_height = 35; // 调整为适应纵向高度
+    const min_height = 0.1;
+
+    // 创建置信度直方图svg
+    const svg_confidence = d3.select("#svgContainer_probability_distribution")
+        .select("#confidence_distribution")
+        .attr("width", svg_width)
+        .attr("height", svg_height)
+    svg_confidence.select("#labels")
+        .attr("class", "labels")
+        .attr("transform", "translate(20, 70)")
+    svg_confidence.select("#bars_1")
+        .attr("class", "bars1")
+        .attr("transform", "translate(20, 0)")
+    d3.select('#bars_2')
+        .selectAll('text')
+        .remove()
+    d3.select('#bars_2')
+        .selectAll('rect')
+        .remove()
+    d3.select('#bars_1')
+        .selectAll('text')
+        .remove()
+    d3.select('#bars_1')
+        .selectAll('rect')
+        .remove()
+    //添加矩形
+    d3.select('#bars_1')
+        .selectAll('rect')
+        .data(confidence)
+        .join('rect')
+        .attr('x', function (d, i) {
+            return i * (rect_height + margin);
+        })
+        .attr('fill', '#A1A1A1')
+        .attr('width', rect_height)
+        .attr("y", svg_height-30) // 初始化y为SVG底部,一定要初始化，才能有动画
+        .transition()
+        .duration(0)
+        .attr('height', function (d) {
+            return d * max_height + min_height; //2是保底宽度
+        })
+        .attr('y', function (d) {
+            return svg_height- 30 - (d * max_height + min_height); // 确保条形图从底部向上绘制
+        });
+    //添加文字
+    d3.select('#bars_1')
+        .selectAll('text')
+        .data(confidence)
+        .join('text')
+        .attr("class", 'labels_text')
+        .attr("x", function (d, i) {
+            return i * (rect_height + margin) + rect_height / 2;
+        })
+        .attr('y', function (d) {
+            return svg_height - 30 - (d * max_height + min_height) - shift; // 确保文字在条形图顶部
+        })
+        .text(function (d) {
+                        // 检查是否为数组以及数组是否非空
+            if (Array.isArray(d) && d.length > 0) {
+                // 将数组中的第一个元素转换为数字
+                var num = parseFloat(d[0]);
+                if (!isNaN(num)) {
+                    // 将数字格式化为三位小数
+                    return num.toFixed(3);
+                } else {
+                    // 如果无法转换为数字，返回原始值
+                    return d[0];
+                }
+            } else {
+                // 如果不是数组或者是空数组，返回原始值
+                return d;
+            }
+        })
+        .style("fill", function (d) {
+            if (d <= 0.5) {
+                return "black"
+            }
+            else {
+                return "red"
+            }
+        })
+        .style("text-anchor", "middle")
+        // .transition()
+        // .duration(2000)
+        .attr("transform", function(d, i) {
+            // 计算旋转中心点
+            var x = i * (rect_height + margin) + rect_height / 2;
+            var y = svg_height - 30 - (d * max_height + min_height) - shift/2;
+            return `rotate(-45, ${x}, ${y})`; // 旋转-45度
+        })
+        .attr("font-family", "Consolas, courier");
+
+
+
+
+    d3.select('#labels')
+        .selectAll('text')
+        .data(cifar10_classes) //cifar10_classes数组在image_type_grid.js中定义
+        .join('text')
+        .attr('x', function (d, i) {
+            return i * (rect_height + margin) + rect_height / 2;
+        })
+        .text(function (d) {
+            return d;
+        })
+        .attr('y', 15) // 确保标签在顶部
+        .style('text-anchor', 'middle')
+        .attr("font-family", "Consolas, courier");
+
+}
 const locateBtn = document.querySelector("#btn_locate");
 locateBtn.addEventListener("click", function () {
     if (locateBtn.checked) {
@@ -920,7 +1234,7 @@ locateBtn.addEventListener("click", function () {
             .style("display", "none")
         // 模型说明
         d3.select("#div_model_name")
-            .style("display", "flex")
+            .style("display", "none")
         // 图片对比
         d3.select("#div_compare_pic")
             .style("display", "none")
@@ -1376,9 +1690,9 @@ lineBtn.addEventListener("click", function () {
         if (locateBtn.checked == true) {
             locateBtn.click();
         }
-        heatMap_svg.style("cursor", "pointer");
-        imageGrid_svg.style("cursor", "pointer");
-        imageTypeGrid_svg.style("cursor", "pointer");
+        heatMap_svg_right.style("cursor", "pointer");
+        imageGrid_svg_right.style("cursor", "pointer");
+        imageTypeGrid_svg_right.style("cursor", "pointer");
         d3.select("#click_img_div")
             .style("display", "none")
         d3.select("#compare_img_div")
@@ -1386,7 +1700,7 @@ lineBtn.addEventListener("click", function () {
         d3.select("#div_model_name")
             .style("display", "none")
         d3.select("#div_compare_pic")
-            .style("display", "block")
+            .style("display", "flex")
         //刚开始进来需要将之前的信息清空
         d3.select("#click_start").attr("src", "../static/example/initial_pic/None.png")
         d3.select("#click_end").attr("src", "../static/example/initial_pic/None.png")
@@ -1404,13 +1718,13 @@ lineBtn.addEventListener("click", function () {
         //热力图事件绑定
         var click_number = 0; //记录点击次数
         var firts_click_pos; //第一次点击的坐标
-        heatMap_svg.on("click", async function (event) {
+        heatMap_svg_right.on("click", async function (event) {
             var temp_pos = d3.pointer(event) //获取事件坐标
             // var x = xScale.invert(temp_pos[0])
             // var y = yScale.invert(temp_pos[1])
             var x = offset_xScale_invert(xScale, temp_pos[0]) // 获得偏移后的潜空间2维坐标，再main.html中定义
             var y = offset_yScale_invert(yScale, temp_pos[1])
-            d3.selectAll(".div_imgcard_info").style("display", "block")
+            d3.selectAll(".div_imgcard_info").style("display", "flex")
             d3.select("#seconde_type").style("display", "inline-block")
             d3.select("#seconde_robustness").style("display", "inline-block")
             //这个if else主要用来控制线
@@ -1432,7 +1746,7 @@ lineBtn.addEventListener("click", function () {
                 click_number = click_number + 1;
                 firts_click_pos = d3.pointer(event)
                 // 第一次点击就添加线，刚开始起点和终点一样
-                heatMap_svg.select("#imageCompare_g")
+                heatMap_svg_right.select("#imageCompare_g_right")
                     .append("line")
                     .attr("x1", firts_click_pos[0])
                     .attr("y1", firts_click_pos[1])
@@ -1444,7 +1758,7 @@ lineBtn.addEventListener("click", function () {
                     .attr("id", "pos" + String(firts_click_pos[0]).replace(".", "") + "" + String(firts_click_pos[1]).replace(".", ""))//把点击的坐标当作线段的id
                 var click_pos = d3.pointer(event) //获取事件坐标
                 // 添加点
-                heatMap_svg.select("#imageCompare_g")
+                heatMap_svg_right.select("#imageCompare_g_right")
                     .append("circle")
                     .attr("cx", click_pos[0])
                     .attr("cy", click_pos[1])
@@ -1454,7 +1768,7 @@ lineBtn.addEventListener("click", function () {
                     .attr("fill", "#00000")
                     .attr("fill-opacity", "1")
                 // 添加图例
-                heatMap_svg.select("#imageCompare_g")
+                heatMap_svg_right.select("#imageCompare_g_right")
                     .append("g")
                     // .attr("class", "bi bi-geo-alt")
                     .attr("width", icon_size)
@@ -1468,9 +1782,9 @@ lineBtn.addEventListener("click", function () {
                     .duration(800)
                     .attr("transform", "translate(" + String(Number(click_pos[0]) - icon_size / 2) + "," + String(Number(click_pos[1]) - icon_size) + ")")
                 // 如果是第一次点击, 则绑定悬停事件
-                heatMap_svg.on("mousemove", async function (event) {
+                heatMap_svg_right.on("mousemove", async function (event) {
                     var move_pos = d3.pointer(event)
-                    heatMap_svg.select("#imageCompare_g")
+                    heatMap_svg_right.select("#imageCompare_g_right")
                         .select("#" + "pos" + String(firts_click_pos[0]).replace(".", "") + "" + String(firts_click_pos[1]).replace(".", ""))
                         .attr("x2", move_pos[0])
                         .attr("y2", move_pos[1])
@@ -1480,10 +1794,10 @@ lineBtn.addEventListener("click", function () {
             } else {
                 click_number = 0;
                 //如果不是第一次点击了，就取消悬停事件
-                heatMap_svg.on("mousemove", null)
+                heatMap_svg_right.on("mousemove", null)
                 var click_pos = d3.pointer(event) //获取事件坐标
                 // 添加点
-                heatMap_svg.select("#imageCompare_g")
+                heatMap_svg_right.select("#imageCompare_g_right")
                     .append("circle")
                     .attr("cx", click_pos[0])
                     .attr("cy", click_pos[1])
@@ -1494,7 +1808,7 @@ lineBtn.addEventListener("click", function () {
                     .attr("fill-opacity", "1")
                 // 添加图例
                 d = ["M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z", "M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"]
-                heatMap_svg.select("#imageCompare_g")
+                heatMap_svg_right.select("#imageCompare_g_right")
                     .append("g")
                     .attr("width", icon_size)
                     .attr("height", icon_size)
@@ -1512,10 +1826,10 @@ lineBtn.addEventListener("click", function () {
 
             img_number = img_number + 1;
             // 让鼠标出现等待界面
-            heatMap_svg.style("cursor", "wait");
-            imageGrid_svg.style("cursor", "wait");
-            imageTypeGrid_svg.style("cursor", "wait");
-            var img_informations = await get_image_information_from_python(x = x, y = y, img_name = String(img_number))
+            heatMap_svg_right.style("cursor", "wait");
+            imageGrid_svg_right.style("cursor", "wait");
+            imageTypeGrid_svg_right.style("cursor", "wait");
+            var img_informations = await get_image_information_from_python(x = x, y = y, img_name = String(img_number),img_type = 1)
             // 只展示当前模型的信息
             var model_id = "M1"
             const radioDNNButtons = document.querySelectorAll('input[name="radio_model"]');
@@ -1563,15 +1877,15 @@ lineBtn.addEventListener("click", function () {
                 show_confidence(img_information['layer'], "right")
             }
             //恢复成可以点击状态
-            heatMap_svg.style("cursor", "pointer");
-            imageGrid_svg.style("cursor", "pointer");
-            imageTypeGrid_svg.style("cursor", "pointer");
+            heatMap_svg_right.style("cursor", "pointer");
+            imageGrid_svg_right.style("cursor", "pointer");
+            imageTypeGrid_svg_right.style("cursor", "pointer");
         })
 
     } else { //取消点击操作
-        heatMap_svg.style("cursor", "default");
-        imageGrid_svg.style("cursor", "default");
-        imageTypeGrid_svg.style("cursor", "default");
+        heatMap_svg_right.style("cursor", "default");
+        imageGrid_svg_right.style("cursor", "default");
+        imageTypeGrid_svg_right.style("cursor", "default");
         // d3.select("#click_img_div")
         //     .style("display", "block")
         // d3.select("#compare_img_div")
@@ -1587,7 +1901,7 @@ lineBtn.addEventListener("click", function () {
         // heatMap_svg.select("#imageCompare_g").selectAll("line").remove()
         // heatMap_svg.select("#imageCompare_g").selectAll("g").remove()
         // heatMap_svg.select("#imageCompare_g").selectAll("circle").remove()
-        heatMap_svg.on("click", null)
+        heatMap_svg_right.on("click", null)
     }
 
 })
@@ -1597,24 +1911,24 @@ const clearBtn = document.querySelector("#btn_clear");
 clearBtn.addEventListener("click", function () {
     //删除单机产生的结果~~~~~~~~~~
     //删除单击产生的图片
-    heatMap_svg.select("#imageAndCircle_g")
+    heatMap_svg_right.select("#imageAndCircle_g_right")
         .selectAll("image")
         .remove()
     //删除点
-    heatMap_svg.select("#imageAndCircle_g")
+    heatMap_svg_right.select("#imageAndCircle_g_right")
         .selectAll("circle")
         .remove()
     //删除划线对比产生的结果~~~~~~~~~~~
     //删除线
-    heatMap_svg.select("#imageCompare_g")
+    heatMap_svg_right.select("#imageCompare_g_right")
         .selectAll("line")
         .remove()
     //删除点
-    heatMap_svg.select("#imageCompare_g")
+    heatMap_svg_right.select("#imageCompare_g_right")
         .selectAll("circle")
         .remove()
     //删除图例
-    heatMap_svg.select("#imageCompare_g")
+    heatMap_svg_right.select("#imageCompare_g_right")
         .selectAll("g")
         .remove()
 
@@ -1721,6 +2035,7 @@ radioDNNButtons.forEach((radioButton) => {
             change_heatMap()
             //绘制类别概览
             change_imageTypeGrid()
+            change_matrix()
 
 
         }
@@ -1731,62 +2046,78 @@ radioDNNButtons.forEach((radioButton) => {
 
 // 右边间工具栏-------------------------------------------------------------------------------------
 //图片与图片类别切换按钮绑定
-const imageBtn_right = document.querySelector("#radio_image_right");
-const classificationBtn_right = document.querySelector("#radio_classification_right");
-const heatmapBtn_right = document.querySelector("#radio_heatmap_right");
-imageBtn_right.addEventListener("click", function () {
-    d3.select("#thresholds_right").style("display", "none");
-    d3.select("#types_right").style("display", "none");
-    d3.select("#svgContainer_imageGrid_right").style("display", "block");
-    d3.select("#svgContainer_typeGrid_right").style("display", "none");
-    d3.select("#svgContainer_heatMapGrid_right").style("display", "none");
-
-})
-classificationBtn_right.addEventListener("click", function () {
-    d3.select("#thresholds_right").style("display", "none");
-    d3.select("#types_right").style("display", "block");
-    d3.select("#svgContainer_imageGrid_right").style("display", "none");
-    d3.select("#svgContainer_typeGrid_right").style("display", "block");
-    d3.select("#svgContainer_heatMapGrid_right").style("display", "none");
-
-})
-heatmapBtn_right.addEventListener("click", function () {
-    d3.select("#thresholds_right").style("display", "block");
-    d3.select("#types_right").style("display", "none");
-    d3.select("#svgContainer_imageGrid_right").style("display", "none");
-    d3.select("#svgContainer_typeGrid_right").style("display", "none");
-    d3.select("#svgContainer_heatMapGrid_right").style("display", "block");
-
-
-})
+// const imageBtn_right = document.querySelector("#radio_image_right");
+// const classificationBtn_right = document.querySelector("#radio_classification_right");
+// const heatmapBtn_right = document.querySelector("#radio_heatmap_right");
+// imageBtn_right.addEventListener("click", function () {
+//     d3.select("#thresholds_right").style("display", "none");
+//     d3.select("#types_right").style("display", "none");
+//     d3.select("#svgContainer_imageGrid_right").style("display", "block");
+//     d3.select("#svgContainer_typeGrid_right").style("display", "none");
+//     d3.select("#svgContainer_heatMapGrid_right").style("display", "none");
+//
+// })
+// classificationBtn_right.addEventListener("click", function () {
+//     d3.select("#thresholds_right").style("display", "none");
+//     d3.select("#types_right").style("display", "block");
+//     d3.select("#svgContainer_imageGrid_right").style("display", "none");
+//     d3.select("#svgContainer_typeGrid_right").style("display", "block");
+//     d3.select("#svgContainer_heatMapGrid_right").style("display", "none");
+//
+// })
+// heatmapBtn_right.addEventListener("click", function () {
+//     d3.select("#thresholds_right").style("display", "block");
+//     d3.select("#types_right").style("display", "none");
+//     d3.select("#svgContainer_imageGrid_right").style("display", "none");
+//     d3.select("#svgContainer_typeGrid_right").style("display", "none");
+//     d3.select("#svgContainer_heatMapGrid_right").style("display", "block");
+//
+//
+// })
 
 // 中间工具栏-------------------------------------------------------------------------------------
 //图片与图片类别切换按钮绑定
+// const imageBtn = document.querySelector("#radio_image");
+// const classificationBtn = document.querySelector("#radio_classification");
+// const heatmapBtn = document.querySelector("#radio_heatmap");
+// imageBtn.addEventListener("click", function () {
+//     d3.select("#thresholds").style("display", "none");
+//     d3.select("#types").style("display", "none");
+//     d3.select("#svgContainer_imageGrid").style("display", "block");
+//     d3.select("#svgContainer_typeGrid").style("display", "none");
+//     d3.select("#svgContainer_heatMapGrid").style("display", "none");
+//
+// })
+// classificationBtn.addEventListener("click", function () {
+//     d3.select("#thresholds").style("display", "none");
+//     d3.select("#types").style("display", "block");
+//     d3.select("#svgContainer_imageGrid").style("display", "none");
+//     d3.select("#svgContainer_typeGrid").style("display", "block");
+//     d3.select("#svgContainer_heatMapGrid").style("display", "none");
+//
+// })
+// heatmapBtn.addEventListener("click", function () {
+//     d3.select("#thresholds").style("display", "block");
+//     d3.select("#types").style("display", "none");
+//     d3.select("#svgContainer_imageGrid").style("display", "none");
+//     d3.select("#svgContainer_typeGrid").style("display", "none");
+//     d3.select("#svgContainer_heatMapGrid").style("display", "block");
+//
+//
+// })
+
+
+
 const imageBtn = document.querySelector("#radio_image");
 const classificationBtn = document.querySelector("#radio_classification");
-const heatmapBtn = document.querySelector("#radio_heatmap");
 imageBtn.addEventListener("click", function () {
-    d3.select("#thresholds").style("display", "none");
-    d3.select("#types").style("display", "none");
-    d3.select("#svgContainer_imageGrid").style("display", "block");
-    d3.select("#svgContainer_typeGrid").style("display", "none");
-    d3.select("#svgContainer_heatMapGrid").style("display", "none");
+    d3.select("#types").style("display", "block");
+    d3.select("#svgContainer_imageGrid_right").style("display", "block");
+    d3.select("#svgContainer_typeGrid_right").style("display", "none");
 
 })
 classificationBtn.addEventListener("click", function () {
-    d3.select("#thresholds").style("display", "none");
     d3.select("#types").style("display", "block");
-    d3.select("#svgContainer_imageGrid").style("display", "none");
-    d3.select("#svgContainer_typeGrid").style("display", "block");
-    d3.select("#svgContainer_heatMapGrid").style("display", "none");
-
-})
-heatmapBtn.addEventListener("click", function () {
-    d3.select("#thresholds").style("display", "block");
-    d3.select("#types").style("display", "none");
-    d3.select("#svgContainer_imageGrid").style("display", "none");
-    d3.select("#svgContainer_typeGrid").style("display", "none");
-    d3.select("#svgContainer_heatMapGrid").style("display", "block");
-
-
+    d3.select("#svgContainer_imageGrid_right").style("display", "none");
+    d3.select("#svgContainer_typeGrid_right").style("display", "block");
 })
