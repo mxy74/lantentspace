@@ -93,9 +93,9 @@ def prepare_shared_data():
 
         # kjl测试superviced-cnn-ae####################################start
         # 原始tsne降维
-        tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2023-08-30.pt"
+        # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2023-08-30.pt"
         # AE加入confidence损失
-        # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-27_cof.pt"
+        tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-27_cof.pt"
         data_z_path = "./static/data/CIFAR10/latent_z/BigGAN_random_png_208z_50000_2023-08-30.pt"
         label_path = "./static/data/CIFAR10/labels/BigGAN_random_png_208z_50000_2023-08-30_labels.pt"
         tree_2D = torch.load(tree_2D_path)
@@ -284,9 +284,9 @@ def prepare_DNN_data():
     Global_DNN_model_dict[model_id].eval()
     Global_DNN_model_dict[model_id].to(device)
 
-    # print("准备CAM方法。。。")
-    # Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id])
-    # print("CAM准备完毕。。。")
+    print("准备CAM方法。。。")
+    Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id])
+    print("CAM准备完毕。。。")
 
     # 预测模型
     print("DNN模型准备完毕，准备鲁棒性预测模型。。。")
@@ -336,7 +336,7 @@ def get_information_data():
     for key in copy_dict:
         DNN_model = Global_DNN_model_dict[key]
         # Rob_predictor = Global_rob_predictor_dict[key]
-        # CAMmethod = Global_CAM_method_dict[key]
+        CAMmethod = Global_CAM_method_dict[key]
         # robustness = my_tools.get_robustness_data(coordinates, data_2D, dict_zs, G=G, DNN_model=DNN_model, Rob_predictor=Rob_predictor)
         # 师兄的部分
         # robustness, img_labels_lst_400, img_coords_lst_400 = my_tools.get_information_other(coordinates, tree_2D, dict_zs, G=G, DNN_model=DNN_model, Rob_predictor=Rob_predictor, dataset_type=dataset_type, idw_p=idw_p)
@@ -348,7 +348,7 @@ def get_information_data():
         # 不对前景使用cam，背景取一个方块
         confidence_imgs, confidence_fore_imgs, img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400, \
             conf_matrix_list = my_tools.get_information_backmix(
-            coordinates, tree_2D, dict_zs, data_z_labels, G=G, DNN_model=DNN_model,
+            coordinates, tree_2D, dict_zs, data_z_labels, G=G, DNN_model=DNN_model, CAMmethod=CAMmethod,
             dataset_type=dataset_type, idw_p=idw_p, mask_threshold=0.25)
         # robustness_dict[key] = list(format(float(n), '.3f')  for n in robustness)
         confidence_dict[key] = list(format(float(n), '.3f') for n in confidence_imgs)

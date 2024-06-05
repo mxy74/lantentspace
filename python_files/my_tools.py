@@ -789,23 +789,14 @@ def get_information(coordinates, tree_2D, dict_zs, G, DNN_model, Rob_predictor, 
     return robustness.detach().cpu().numpy(), np.float_(img_labels_lst_400), np.float_(img_coords_lst_400)
 
 
-def get_backmix(z, G, DNN_model, mask_threshold, dataset_type, background_img):
-    time7 = time.time()
+def get_backmix(z, G, DNN_model, CAMmethod, mask_threshold, dataset_type, background_img):
 
     imgs = G(z)
     # DNN_model.layer3.register_forward_hook(get_activation('layer3'))
-    time7 = time.time()
-    # print("生成图片消耗时间：", time6 - time5)
 
     layers = DNN_model(imgs)  # 分类模型分类图片
     # CAMlayer = activation['layer3']
     max_value, label = torch.max(layers, dim=1)
-    # max_pro_id = layers.squeeze(0).argmax().item()
-    # 解释图像并获取 CAM
-    # cams = CAMmethod(max_pro_id, layers)
-    # 展开成32*32
-
-    # cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear', align_corners=False)
 
     # 每张图固定比例取前景
     # 将 CAM 张量展平为一维数组
@@ -849,7 +840,15 @@ def get_backmix(z, G, DNN_model, mask_threshold, dataset_type, background_img):
 
     fore_layers = DNN_model(masked_random_image_tensor)
     fore_max_value, fore_label = torch.max(fore_layers, dim=1)
-    return imgs, layers, max_value, label, masked_random_image_tensor, fore_layers, fore_max_value, fore_label
+
+    max_pro_id = fore_layers.squeeze(0).argmax().item()
+    # 解释图像并获取 CAM
+    cams = CAMmethod(max_pro_id, fore_layers)
+    # 展开成32*32
+
+    cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear', align_corners=False)
+    # [1,1,32,32]
+    return imgs, layers, max_value, label, masked_random_image_tensor, fore_layers, fore_max_value, fore_label, cams
 
 
 # 返回label的插值
@@ -892,7 +891,7 @@ def get_zs_idw_class(coordinates, kdTree_2D, latent_z, data_z_labels, k=20, p=50
 
 
 # 获取两组图片（原始图片，混合图片，背景取一块贴到前景图上）坐标对应的置信度、类别、以及右边概览图片的坐标(使用其他插值法)------------------------------------------
-def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN_model, dataset_type, idw_p=50,
+def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN_model, CAMmethod, dataset_type, idw_p=50,
                             mask_threshold=0.25):
     # 根据k个最近邻坐标，计算出坐标对应的z
     print("取z中.....")
@@ -929,8 +928,9 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                 random_image_number = random.randint(0, 49999)  # 假设图片编号从0到49999
                 background_img = background_imgs[random_image_number]
                 background_img = background_img.unsqueeze(0)
-                imgs, layers, max_value, label, fore_imgs, fore_layers, fore_max_value, fore_label = get_backmix(z, G,
+                imgs, layers, max_value, label, fore_imgs, fore_layers, fore_max_value, fore_label, cams = get_backmix(z, G,
                                                                                                                  DNN_model,
+                                                                                                                 CAMmethod,
                                                                                                                  mask_threshold,
                                                                                                                  dataset_type,
                                                                                                                  background_img)
@@ -940,15 +940,8 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
 
                 same_labels_mask_fore = torch.eq(fore_label, batch_labels.to(device))
 
-                #
-
-
-
                 max_value = torch.where(same_labels_mask, max_value, -max_value)
                 fore_max_value = torch.where(same_labels_mask_fore, fore_max_value, -fore_max_value)
-
-
-
                 # imgs = G(z)
                 # # DNN_model.layer3.register_forward_hook(get_activation('layer3'))
                 # layers = DNN_model(imgs) #分类模型分类图片
@@ -973,7 +966,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                 all_fore_imgs = fore_imgs
                 labels = label
                 fore_labels = fore_label
-                # CAMlayers = cams
+                CAMlayers_mix = cams
                 # binary_cams = binary_cam
                 first = 1
             else:
@@ -985,7 +978,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                 all_fore_imgs = torch.cat((all_fore_imgs, fore_imgs), dim=0)
                 labels = torch.cat((labels, label), dim=0)
                 fore_labels = torch.cat((fore_labels, fore_label), dim=0)
-                # CAMlayers = torch.cat((CAMlayers, cams), dim=0)
+                CAMlayers_mix = torch.cat((CAMlayers_mix, cams), dim=0)
                 # binary_cams = torch.cat((binary_cams, binary_cam), dim=0)
         # print("robustness.shape: ", robustness.shape)
         # print("fore_robustness.shape: ", fore_robustness.shape)
@@ -1012,6 +1005,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
         print("labels.shape: ", labels.shape)
         print("fore_labels.shape: ", fore_labels.shape)
         print("zs_labels shape", zs_labels.shape)
+        print("cams shape", CAMlayers_mix.shape)
         # 获取混淆矩阵
         # 将标签转换为NumPy数组
         fore_labels_np = fore_labels.cpu().numpy()
@@ -1061,8 +1055,42 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                              f'./static/data/' + dataset_type + f'/pic/grid_images/grid_image_{20 * i + j}.png')
 
             foreimg_single = all_fore_imgs[index]
+            # print("foreimg_single.shape", foreimg_single.shape)
             utils.save_image(foreimg_single.detach().cpu(),
                              f'./static/data/' + dataset_type + f'/pic/grid_fore_images/grid_fore_image_{20 * i + j}.png')
+            cam_single = CAMlayers_mix[index]
+            # print("cam_single.shape", cam_single.shape)
+            # cam_single.shape torch.Size([1, 32, 32])
+            # foreimg_single.shape torch.Size([3, 32, 32])
+            # 将 tensor 转换为 numpy 数组并移除批次维度
+            cam_array = cam_single.squeeze().cpu().numpy()
+
+            # 归一化到 0 到 1 的范围内
+            cam_array = (cam_array - cam_array.min()) / (cam_array.max() - cam_array.min())
+
+            # 将归一化后的数组转换为 0 到 255 的范围
+            cam_array = (cam_array * 255).astype(np.uint8)
+
+            # 使用 Matplotlib 将灰度图转换为彩色图
+
+
+
+            # 获取颜色映射
+            cmap = plt.colormaps['jet']
+            # 将灰度图应用颜色映射，并转换为 (32, 32, 4) 的 RGBA 图像
+            colored_cam = cmap(cam_array)
+
+            # 转换为 Pillow 图像
+            colored_cam_img = Image.fromarray((colored_cam[:, :, :3] * 255).astype(np.uint8))
+
+            # 添加 Alpha 通道
+            alpha = 0.3  # 可以根据需要调整透明度
+            alpha_channel = (colored_cam[:, :, 3] * alpha * 255).astype(np.uint8)
+            colored_cam_img.putalpha(Image.fromarray(alpha_channel))
+
+            # 保存为 PNG 文件
+            output_path = f'./static/data/' + dataset_type + f'/pic/cam_image/cam_image_{20 * i + j}.png'
+            colored_cam_img.save(output_path)
 
             # save_generate_imgs_tensor.append(all_generate_imgs_tensor[index])
 
@@ -1074,6 +1102,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
             img_labels_lst_400.append((labels[index]).detach().cpu())
             img_coords_lst_400.append((coordinates[index]))
             foreimg_labels_lst_400.append((fore_labels[index]).detach().cpu())
+
             # 生成这些图片的z
             zs_lst_400.append(zs[index])
 

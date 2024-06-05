@@ -2121,3 +2121,4 @@ classificationBtn.addEventListener("click", function () {
     d3.select("#svgContainer_imageGrid_right").style("display", "none");
     d3.select("#svgContainer_typeGrid_right").style("display", "block");
 })
+

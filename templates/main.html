@@ -76,9 +76,9 @@
         <!-- 分辨率选择 -->
         <div class="panal_top_element" id="control_resolution_copy" style="margin-left: 10px;">
             <label for="resolution">Resolution</label>
-            <input type="range" id="resolution" value="30" min="30" max="100" step="10"
+            <input type="range" id="resolution" value="40" min="20" max="100" step="10"
                 oninput="document.getElementById('resolution_value').innerHTML = this.value + ' × ' + this.value" />
-            <label for="resolution" id="resolution_value">30 × 30</label>
+            <label for="resolution" id="resolution_value">40 × 40</label>
         </div>
         <!-- 反距离指数选择 -->
         <div class="panal_top_element" id="control_resolution_copy" style="margin-left: 10px;">
@@ -546,6 +546,10 @@
                             <div>
                                 <input class="input_radio" type="radio" id="radio_classification" name="radio_view">
                                 <label class="form-check-label" for="radio_view">Label</label>
+                            </div>
+                            <div>
+                                <input class="input_radio" type="radio" id="radio_cam" name="radio_cam" checked>
+                                <label class="form-check-label" for="radio_view">CAM</label>
                             </div>
                         </div>
 <!--                        类别颜色-->

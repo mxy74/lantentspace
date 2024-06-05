@@ -77,7 +77,7 @@ function draw_imageGrid() {
         .attr("data-bs-toggle", "tooltip")
         .attr("title", "image")
         .attr("border", "5")
-     svg_imageGrid_g_right.selectAll("image")
+    svg_imageGrid_g_right.selectAll("image")
         .data(img_coords_lst_400)
         .join("image")
         .attr("number", (d, i) => i) //方便后续定位图片
@@ -89,5 +89,25 @@ function draw_imageGrid() {
         .attr("data-bs-toggle", "tooltip")
         .attr("title", "image")
         .attr("border", "5")
-    
+            // 添加CAM图像层
+
+    const camImages = svg_imageGrid_g_right.selectAll(".cam-image")
+        .data(img_coords_lst_400)
+        .join("image")
+        // .attr("class", "cam-image")
+        .attr("number", (d, i) => i) // 方便后续定位图片
+        .attr("href", (d, i) => `../static/data/${dataset_type}/pic/cam_image/cam_image_${i}.png?t=` + Math.random())
+        .attr("height", rectWidth - 6)
+        .attr("width", rectWidth - 6)
+        .attr("x", (d, i) => rectWidth * (i % 20) + 3)
+        .attr("y", (d, i) => rectWidth * Math.floor(i / 20) + 3)
+        .attr("data-bs-toggle", "tooltip")
+        .attr("title", "CAM image")
+        // .attr("opacity", 0.5); // 设置透明度以便原始图像可见
+    const camBtn = document.querySelector("#radio_cam");
+    camBtn.addEventListener("click", function () {
+        const currentOpacity = camImages.attr("opacity");
+        const newOpacity = currentOpacity === "0" ? "1" : "0";
+        camImages.attr("opacity", newOpacity);
+     })
 }
