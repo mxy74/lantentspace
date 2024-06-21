@@ -17,20 +17,20 @@ import tensorflow as tf
 
 def make_model(sess, model_to_run, model_path, 
                labels_path, randomize=False,):
-  """Make an instance of a model.
+  """Make an instance of a models.
 
   Args:
     sess: tf session instance.
-    model_to_run: a string that describes which model to make.
+    model_to_run: a string that describes which models to make.
     model_path: Path to models saved graph.
     randomize: Start with random weights
     labels_path: Path to models line separated class names text file.
 
   Returns:
-    a model instance.
+    a models instance.
 
   Raises:
-    ValueError: If model name is not valid.
+    ValueError: If models name is not valid.
   """
   if model_to_run == 'InceptionV3':
     mymodel = model.InceptionV3Wrapper_public(
@@ -44,7 +44,7 @@ def make_model(sess, model_to_run, model_path,
     mymodel = resnet_model.ResNet20Wrapper(
       model_path=model_path, label_names=labels_path)
   else:
-    raise ValueError('Invalid model name')
+    raise ValueError('Invalid models name')
   if randomize:  # randomize the network!
     sess.run(tf.global_variables_initializer())
   return mymodel
@@ -130,10 +130,10 @@ def load_images_from_files(filenames, max_imgs=500, return_filenames=False,
 
 
 def get_acts_from_images(imgs, model, bottleneck_name):
-  """Run images in the model to get the activations.
+  """Run images in the models to get the activations.
   Args:
     imgs: a list of images
-    model: a model instance
+    model: a models instance
     bottleneck_name: bottleneck name to get the activation from
   Returns:
     numpy array of activations.
@@ -207,24 +207,24 @@ def cross_val(a, b, methods):
 
 
 def give_classifier(method, param):
-  """Returns an sklearn classification model.
+  """Returns an sklearn classification models.
 
   Args:
-    method: Name of the sklearn classification model
-    param: Hyperparameters of the sklearn model
+    method: Name of the sklearn classification models
+    param: Hyperparameters of the sklearn models
 
   Returns:
-    An untrained sklearn classification model
+    An untrained sklearn classification models
 
   Raises:
-    ValueError: if the model name is invalid.
+    ValueError: if the models name is invalid.
   """
   if method == 'logistic':
     return linear_model.LogisticRegression(C=param)
   elif method == 'sgd':
     return linear_model.SGDClassifier(alpha=param)
   else:
-    raise ValueError('Invalid model!')
+    raise ValueError('Invalid models!')
 
 
 def binary_dataset(pos, neg, balanced=True):

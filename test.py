@@ -132,7 +132,7 @@ for i, (img, img_name) in enumerate(train_dataloader):
 #     input_image = transform(image)
 #     input_image = input_image.unsqueeze(0).to(device)  # 增加一个维度维batch维度
 #     print("image.shape:",input_image.shape)
-#     output = model(input_image)
+#     output = models(input_image)
 #     print(output)
 #     a = input("press 0 to break: ")
 #     if a == "0":

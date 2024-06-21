@@ -83,7 +83,7 @@ def main(args):
     ace_helpers.save_images(image_dir,
                             (cd.discovery_images * 256).astype(np.uint8))
     # Discovering Concepts
-    # 将dataset中的概念输入self.model,根据BOTTLENECKS获得中间层输出,聚类,得到符合条件的概念,每个概念包括对应的概念图,补丁和概念对应的图片
+    # 将dataset中的概念输入self.models,根据BOTTLENECKS获得中间层输出,聚类,得到符合条件的概念,每个概念包括对应的概念图,补丁和概念对应的图片
     cd.discover_concepts(method='KM', param_dicts={'n_clusters': 25})
 
     del cd.dataset  # Free memory
@@ -120,11 +120,11 @@ def parse_arguments(argv):
     parser.add_argument('--working_dir', type=str,
                         help='Directory to save the results.', default='./ACE')
     parser.add_argument('--model_to_run', type=str,
-                        help='The name of the model.', default='GoogleNet')
+                        help='The name of the models.', default='GoogleNet')
     parser.add_argument('--model_path', type=str,
-                        help='Path to model checkpoints.', default='./tensorflow_inception_graph.pb')
+                        help='Path to models checkpoints.', default='./tensorflow_inception_graph.pb')
     parser.add_argument('--labels_path', type=str,
-                        help='Path to model checkpoints.', default='./imagenet_labels.txt')
+                        help='Path to models checkpoints.', default='./imagenet_labels.txt')
     parser.add_argument('--target_class', type=str,
                         help='The name of the target class to be interpreted', default='zebra')
     parser.add_argument('--bottlenecks', type=str,

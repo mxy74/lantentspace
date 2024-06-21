@@ -96,24 +96,65 @@ from torchvision.transforms.functional import normalize, resize, to_pil_image
 # print("各类别的后128个元素已保存为 category_tail_128_elements.pt")
 
 
+# import torch
+# import numpy as np
+# from sklearn.metrics import confusion_matrix
+#
+# # 假设fore_labels和zs_labels是你的预测标签和真实标签
+# fore_labels = torch.randint(0, 10, (900,))  # 预测标签示例
+# zs_labels = torch.randint(0, 10, (900,))    # 真实标签示例
+#
+# # 将标签转换为NumPy数组
+# fore_labels_np = fore_labels.cpu().numpy()
+# zs_labels_np = zs_labels.cpu().numpy()
+#
+# # 计算混淆矩阵
+# num_classes = 10
+# conf_matrix = confusion_matrix(zs_labels_np, fore_labels_np, labels=np.arange(num_classes))
+#
+# # 将混淆矩阵转换为嵌套列表（用于JSON序列化）
+# conf_matrix_list = conf_matrix.tolist()
+#
+# # 打印混淆矩阵以确保其正确
+# print(conf_matrix_list)
+
 import torch
 import numpy as np
-from sklearn.metrics import confusion_matrix
+from PIL import Image, ImageEnhance
 
-# 假设fore_labels和zs_labels是你的预测标签和真实标签
-fore_labels = torch.randint(0, 10, (900,))  # 预测标签示例
-zs_labels = torch.randint(0, 10, (900,))    # 真实标签示例
+# 假设 cam_single 是你的类激活图，形状为 torch.Size([1, 32, 32])
+cam_single = torch.rand(1, 32, 32)  # 示例数据，实际使用时替换为你的 cam_single
 
-# 将标签转换为NumPy数组
-fore_labels_np = fore_labels.cpu().numpy()
-zs_labels_np = zs_labels.cpu().numpy()
+# 将 tensor 转换为 numpy 数组并移除批次维度
+cam_array = cam_single.squeeze().numpy()
 
-# 计算混淆矩阵
-num_classes = 10
-conf_matrix = confusion_matrix(zs_labels_np, fore_labels_np, labels=np.arange(num_classes))
+# 归一化到 0 到 1 的范围内
+cam_array = (cam_array - cam_array.min()) / (cam_array.max() - cam_array.min())
 
-# 将混淆矩阵转换为嵌套列表（用于JSON序列化）
-conf_matrix_list = conf_matrix.tolist()
+# 将归一化后的数组转换为 0 到 255 的范围
+cam_array = (cam_array * 255).astype(np.uint8)
 
-# 打印混淆矩阵以确保其正确
-print(conf_matrix_list)
+# 使用 Matplotlib 将灰度图转换为彩色图
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+
+# 获取颜色映射
+cmap = plt.colormaps['jet']
+# 将灰度图应用颜色映射，并转换为 (32, 32, 4) 的 RGBA 图像
+colored_cam = cmap(cam_array)
+
+# 转换为 Pillow 图像
+colored_cam_img = Image.fromarray((colored_cam[:, :, :3] * 255).astype(np.uint8))
+
+# 添加 Alpha 通道
+alpha = 0.2  # 可以根据需要调整透明度
+alpha_channel = (colored_cam[:, :, 3] * alpha * 255).astype(np.uint8)
+colored_cam_img.putalpha(Image.fromarray(alpha_channel))
+
+# 保存为 PNG 文件
+output_path = 'cam_with_alpha.png'
+colored_cam_img.save(output_path)
+
+print(f"CAM image saved as {output_path}")
+
+

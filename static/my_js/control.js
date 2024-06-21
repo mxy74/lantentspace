@@ -24,7 +24,7 @@ function control_updata_all_transition(x, y, length) {
         return -1;
     }
     var originalSelectedIndex = getCheckedIndex(radioDNNButtons);
-    if (radioDNNButtons[originalSelectedIndex].value != "M1-M2") {
+    if (radioDNNButtons[originalSelectedIndex].value !== "M1-M2") {
         //修改类别网格 (函数来自于image_type_grid.js)
         change_imageTypeGrid()
     }
@@ -46,7 +46,7 @@ const datasetsSelect = document.querySelector("#select_dataset_type_selection");
 datasetsSelect.addEventListener("change", async function () {
     var dataset_type = document.getElementById("select_dataset_type_selection").value //在Document.querySelector()通过id获取才需要加#
     var modelSelect = document.querySelector("#select_model_selection");
-    if (dataset_type == "CIFAR10") {
+    if (dataset_type === "CIFAR10") {
         // 清空原有选项
         modelSelect.innerHTML = "";
         // 添加新的选项
@@ -56,10 +56,23 @@ datasetsSelect.addEventListener("change", async function () {
             option.text = options[i];
             modelSelect.add(option);
         }
-        document.querySelector("#task_category").innerHTML = "Category";
+        // document.querySelector("#task_category").innerHTML = "Category";
 
         document.querySelector("#model_title_name").innerHTML = document.querySelector("#select_model_selection").value;
-    } else if (dataset_type == "SteeringAngle") {
+    } else if (dataset_type === "GTSRB") {
+        // 清空原有选项
+        modelSelect.innerHTML = "";
+        // 添加新的选项
+        var options = ["ResNet18", "ResNet32", "ResNet44", "ResNet56", "VGG11_BN", "VGG13_BN", "VGG16_BN", "VGG19_BN", "MobileNetV2_x0_5", "MobileNetV2_x0_75", "MobileNetV2_x1_0", "MobileNetV2_x1_4"];
+        for (var i = 0; i < options.length; i++) {
+            var option = document.createElement("option");
+            option.text = options[i];
+            modelSelect.add(option);
+        }
+        // document.querySelector("#task_category").innerHTML = "Category";
+
+        document.querySelector("#model_title_name").innerHTML = document.querySelector("#select_model_selection").value;
+    }else if (dataset_type == "SteeringAngle") {
         // 清空原有选项
         modelSelect.innerHTML = "";
         // 添加新的选项
@@ -801,17 +814,22 @@ brushBtn.addEventListener("click", function () {
 //
 // }
 
-function show_confidence(confidence, side) {
+function show_confidence(confidence,confidence_label,dataset_type, side) {
 
     // console.log(index_max, index_max_2);
     const svg_width = 400;
-    const svg_height = 160;
+    const svg_height = 180;
     const rect_height = 18;
     const margin = 18;
     const shift = 13;
     const max_height = 35
     const min_height = 0.1
-
+    if (dataset_type === "CIFAR10") {
+        class_names = confidence_label.map(label => cifar10_classes[label])
+    }
+    if (dataset_type === "GTSRB") {
+        class_names = confidence_label.map(label => GTSRB_classes[label])
+    }
     // 创建置信度直方图svg
     const svg_confidence = d3.select("#svgContainer_probability_distribution")
         .select("#confidence_distribution")
@@ -820,12 +838,15 @@ function show_confidence(confidence, side) {
     svg_confidence.select("#bars_1")
         .attr("class", "bars1")
         .attr("transform", "translate(20, 0)");
-    svg_confidence.select("#labels")
+    svg_confidence.select("#labels_1")
         .attr("class", "labels")
         .attr("transform", "translate(20, 70)")
+    svg_confidence.select("#labels_2")
+        .attr("class", "labels")
+        .attr("transform", "translate(20, 95)")
     svg_confidence.select("#bars_2")
         .attr("class", "bars2")
-        .attr("transform", "translate(20, 95)")
+        .attr("transform", "translate(20, 125)")
 
     if (side == "left") {
         // d3.select('#bars_1')
@@ -906,6 +927,41 @@ function show_confidence(confidence, side) {
                 return `rotate(-35, ${x}, ${y})`; // 旋转-45度
             })
             .attr("font-family", "Consolas, courier");
+        if(dataset_type === "CIFAR10"){
+            d3.select('#labels_1')
+                .selectAll('image')
+                .remove()
+            d3.select('#labels_1')
+                .selectAll('text')
+                .data(class_names) //cifar10_classes数组在image_type_grid.js中定义
+                .join('text')
+                .attr('x', function (d, i) {
+                    return i * (rect_height + margin) + rect_height / 2;
+                })
+                .text(function (d) {
+                    return d;
+                })
+                .attr('y', 15) // 确保标签在顶部
+                .style('text-anchor', 'middle');
+        }
+        else if(dataset_type === "GTSRB"){
+            d3.select('#labels_1')
+                .selectAll('text')
+                .remove()
+            d3.select('#labels_1')
+                .selectAll('image')
+                .data(confidence_label)
+                .join('image')
+                .attr('href', d => `../static/example/label_pic/${d}.png`)
+                .attr('x', function (d, i) {
+                    return i * (rect_height + margin);
+                })
+                .attr('y', 5) // 确保标签在顶部
+                .style('width', 20) // 调整为你需要的宽度
+                .style('height', 20)
+                .attr("title", "logo image");
+        }
+
 
     } else if (side == "right") {
         //添加矩形
@@ -974,21 +1030,55 @@ function show_confidence(confidence, side) {
             return `rotate(-35, ${x}, ${y})`; // 旋转-45度
             })
             .attr("font-family", "Consolas, courier");
+        if(dataset_type === "CIFAR10"){
+            d3.select('#labels_2')
+                .selectAll('image')
+                .remove()
+            d3.select('#labels_2')
+                .selectAll('text')
+                .data(class_names) //cifar10_classes数组在image_type_grid.js中定义
+                .join('text')
+                .attr('x', function (d, i) {
+                    return i * (rect_height + margin) + rect_height / 2;
+                })
+                .text(function (d) {
+                    return d;
+                })
+                .attr('y', 15) // 确保标签在顶部
+                .style('text-anchor', 'middle');
+        }
+        else if(dataset_type === "GTSRB"){
+            d3.select('#labels_2')
+                .selectAll('text')
+                .remove()
+            d3.select('#labels_2')
+                .selectAll('image')
+                .data(confidence_label)
+                .join('image')
+                .attr('href', d => `../static/example/label_pic/${d}.png`)
+                .attr('x', function (d, i) {
+                    return i * (rect_height + margin);
+                })
+                .attr('y', 5) // 确保标签在顶部
+                .style('width', 20) // 调整为你需要的宽度
+                .style('height', 20)
+                .attr("title", "logo image");
+        }
     }
 
 
-    d3.select('#labels')
-        .selectAll('text')
-        .data(cifar10_classes) //cifar10_classes数组在image_type_grid.js中定义
-        .join('text')
-        .attr('x', function (d, i) {
-            return i * (rect_height + margin) + rect_height / 2;
-        })
-        .text(function (d) {
-            return d;
-        })
-        .attr('y', 15) // 确保标签在顶部
-        .style('text-anchor', 'middle');
+    // d3.select('#labels')
+    //     .selectAll('text')
+    //     .data(cifar10_classes) //cifar10_classes数组在image_type_grid.js中定义
+    //     .join('text')
+    //     .attr('x', function (d, i) {
+    //         return i * (rect_height + margin) + rect_height / 2;
+    //     })
+    //     .text(function (d) {
+    //         return d;
+    //     })
+    //     .attr('y', 15) // 确保标签在顶部
+    //     .style('text-anchor', 'middle');
 
 }
 // 这里不做模型对比，就显示一个模型的信息
@@ -1082,7 +1172,7 @@ function show_confidence_single_tran(confidence) {
         .style('text-anchor', 'middle');
 
 }
-function show_confidence_single(confidence) {
+function show_confidence_single(confidence,confidence_label,dataset_type) {
 
     // console.log(index_max, index_max_2);
     const svg_width = 400;
@@ -1092,13 +1182,18 @@ function show_confidence_single(confidence) {
     const shift = 13;
     const max_height = 35; // 调整为适应纵向高度
     const min_height = 0.1;
-
+    if (dataset_type === "CIFAR10") {
+        class_names = confidence_label.map(label => cifar10_classes[label])
+    }
+    if (dataset_type === "GTSRB") {
+        class_names = confidence_label.map(label => GTSRB_classes[label])
+    }
     // 创建置信度直方图svg
     const svg_confidence = d3.select("#svgContainer_probability_distribution")
         .select("#confidence_distribution")
         .attr("width", svg_width)
         .attr("height", svg_height)
-    svg_confidence.select("#labels")
+    svg_confidence.select("#labels_1")
         .attr("class", "labels")
         .attr("transform", "translate(20, 70)")
     svg_confidence.select("#bars_1")
@@ -1107,12 +1202,24 @@ function show_confidence_single(confidence) {
     d3.select('#bars_2')
         .selectAll('text')
         .remove()
+    d3.select('#labels_2')
+        .selectAll('image')
+        .remove()
+    d3.select('#labels_2')
+        .selectAll('text')
+        .remove()
     d3.select('#bars_2')
         .selectAll('rect')
         .remove()
     d3.select('#bars_1')
         .selectAll('text')
         .remove()
+    // d3.select('#labels_1')
+    //     .selectAll('image')
+    //     .remove()
+    // d3.select('#labels_1')
+    //     .selectAll('text')
+    //     .remove()
     d3.select('#bars_1')
         .selectAll('rect')
         .remove()
@@ -1126,14 +1233,14 @@ function show_confidence_single(confidence) {
         })
         .attr('fill', '#A1A1A1')
         .attr('width', rect_height)
-        .attr("y", svg_height-30) // 初始化y为SVG底部,一定要初始化，才能有动画
+        .attr("y", svg_height - 30) // 初始化y为SVG底部,一定要初始化，才能有动画
         .transition()
         .duration(0)
         .attr('height', function (d) {
             return d * max_height + min_height; //2是保底宽度
         })
         .attr('y', function (d) {
-            return svg_height- 30 - (d * max_height + min_height); // 确保条形图从底部向上绘制
+            return svg_height - 30 - (d * max_height + min_height); // 确保条形图从底部向上绘制
         });
     //添加文字
     d3.select('#bars_1')
@@ -1148,7 +1255,7 @@ function show_confidence_single(confidence) {
             return svg_height - 30 - (d * max_height + min_height) - shift; // 确保文字在条形图顶部
         })
         .text(function (d) {
-                        // 检查是否为数组以及数组是否非空
+            // 检查是否为数组以及数组是否非空
             if (Array.isArray(d) && d.length > 0) {
                 // 将数组中的第一个元素转换为数字
                 var num = parseFloat(d[0]);
@@ -1167,39 +1274,59 @@ function show_confidence_single(confidence) {
         .style("fill", function (d) {
             if (d <= 0.5) {
                 return "black"
-            }
-            else {
+            } else {
                 return "red"
             }
         })
         .style("text-anchor", "middle")
         // .transition()
         // .duration(2000)
-        .attr("transform", function(d, i) {
+        .attr("transform", function (d, i) {
             // 计算旋转中心点
             var x = i * (rect_height + margin) + rect_height / 2;
-            var y = svg_height - 30 - (d * max_height + min_height) - shift/2;
+            var y = svg_height - 30 - (d * max_height + min_height) - shift / 2;
             return `rotate(-45, ${x}, ${y})`; // 旋转-45度
         })
         .attr("font-family", "Consolas, courier");
 
 
+    if (dataset_type === "CIFAR10") {
+        d3.select('#labels_1')
+            .selectAll('image')
+            .remove()
+        d3.select('#labels_1')
+            .selectAll('text')
+            .data(class_names) //cifar10_classes数组在image_type_grid.js中定义
+            .join('text')
+            .attr('x', function (d, i) {
+                return i * (rect_height + margin) + rect_height / 2;
+            })
+            .text(function (d) {
+                return d;
+            })
+            .attr('y', 15) // 确保标签在顶部
+            .style('text-anchor', 'middle')
+            .attr("font-family", "Consolas, courier");
+    }
+    else if (dataset_type === "GTSRB") {
+        console.log("使用logos")
+        d3.select('#labels_1')
+            .selectAll('text')
+            .remove()
+        d3.select('#labels_1')
+            .selectAll('image')
+            .data(confidence_label)
+            .join('image')
+            .attr('href', d => `../static/example/label_pic/${d}.png`)
+            .attr('x', function (d, i) {
+                return i * (rect_height + margin);
+            })
+            .attr('y', 5) // 确保标签在顶部
+            .style('width', 20) // 调整为你需要的宽度
+            .style('height', 20)
+            .attr("title", "logo image");
 
-
-    d3.select('#labels')
-        .selectAll('text')
-        .data(cifar10_classes) //cifar10_classes数组在image_type_grid.js中定义
-        .join('text')
-        .attr('x', function (d, i) {
-            return i * (rect_height + margin) + rect_height / 2;
-        })
-        .text(function (d) {
-            return d;
-        })
-        .attr('y', 15) // 确保标签在顶部
-        .style('text-anchor', 'middle')
-        .attr("font-family", "Consolas, courier");
-
+    }
 }
 const locateBtn = document.querySelector("#btn_locate");
 locateBtn.addEventListener("click", function () {
@@ -1246,15 +1373,21 @@ locateBtn.addEventListener("click", function () {
         var rectWidth = 40;
         //刚开始进来需要将之前的信息清空
         d3.select("#click_img").attr("src", "../static/example/initial_pic/None.png")
+        d3.select("#cam_img").attr("src", "../static/example/initial_pic/None.png")
+
         // 显示类别信息
         document.getElementById("classified-as_1").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
         document.getElementById("classified-as_2").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
+        document.getElementById("classified-as_1_real").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
+        document.getElementById("classified-as_2_real").innerText = "";
         // 显示鲁棒性
         document.getElementById("predicted-robustness-value_1").innerText = "";
         document.getElementById("predicted-robustness-value_2").innerText = "";
         // 显示置信度
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        show_confidence_single(zero_confidece)
+        dataset_type = document.getElementById("select_dataset_type_selection").value
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        show_confidence_single(zero_confidece, zero_confidece_label,dataset_type)
         // show_confidence(zero_confidece, "left")
         // show_confidence(zero_confidece, "right")
         //热力图绑定点击事件
@@ -1366,20 +1499,35 @@ locateBtn.addEventListener("click", function () {
 
             // 修改左边示例图
             d3.select("#click_img").attr("src", "../static/example/pic/" + String(img_number) + ".png?t=" + Math.random())
+            d3.select("#cam_img").attr("src", "../static/example/pic/" + String(img_number) + "_cam.png?t=" + Math.random())
             // 左边部分
-            var dataset_type = document.getElementById("select_dataset_type_selection").value
-            if (dataset_type == "CIFAR10") {
+            // var dataset_type = document.getElementById("select_dataset_type_selection").value
+            if (dataset_type === "CIFAR10") {
                 // 显示类别信息
-                document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
-            } else if (dataset_type == "SteeringAngle") {
+                // document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
+                document.getElementById("classified-as_1").innerText = `Pre : ${cifar10_classes[parseInt(img_information['label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").innerText = `Real: ${cifar10_classes[parseInt(img_information['real_label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1").setAttribute('title', `Pre : ${cifar10_classes[parseInt(img_information['label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${cifar10_classes[parseInt(img_information['real_label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
+            } else if (dataset_type === "SteeringAngle") {
                 // 显示类别信息
                 document.getElementById("classified-as_1").innerText = ((img_information['label']['M1'] - 0.5) * 160).toFixed(); //cifar10_classes数组在image_type_grid.js中定义
+            }else if (dataset_type === "GTSRB") {
+                // 显示类别信息
+                // document.getElementById("classified-as_1").innerText = GTSRB_classes[parseInt(img_information['label']['M1'])];
+                document.getElementById("classified-as_1").innerText = `Pre : ${GTSRB_classes[parseInt(img_information['label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").innerText = `Real: ${GTSRB_classes[parseInt(img_information['real_label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1").setAttribute('title', `Pre : ${GTSRB_classes[parseInt(img_information['label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${GTSRB_classes[parseInt(img_information['real_label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
             }
+
             // 显示鲁棒性
             document.getElementById("predicted-robustness-value_1").innerText = (img_information['img_robustness']["M1"] * 1000).toFixed(0);
             // 显示置信度
             // show_confidence(img_information['layer']["M1"], "left")
-            show_confidence_single(img_information['layer']["M1"])
+            show_confidence_single(img_information['layer']["M1"],img_information['layer_label']["M1"],dataset_type)
             // 右边部分
             var model_name = document.getElementById("select_model_selection_compare").value
             if (model_name != "None") {
@@ -1495,19 +1643,34 @@ locateBtn.addEventListener("click", function () {
                     .attr("fill-opacity", "1")
                 // 修改左边示例图
                 d3.select("#click_img").attr("src", "../static/example/pic/" + String(img_number) + ".png?t=" + Math.random())
+                d3.select("#cam_img").attr("src", "../static/example/pic/" + String(img_number) + "_cam.png?t=" + Math.random())
+
                 var dataset_type = document.getElementById("select_dataset_type_selection").value
-                if (dataset_type == "CIFAR10") {
-                    // 显示类别信息
-                    document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
-                } else if (dataset_type == "SteeringAngle") {
+                if (dataset_type === "CIFAR10") {
+                // 显示类别信息
+                // document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
+                document.getElementById("classified-as_1").innerText = `Pre : ${cifar10_classes[parseInt(img_information['label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").innerText = `Real: ${cifar10_classes[parseInt(img_information['real_label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1").setAttribute('title', `Pre : ${cifar10_classes[parseInt(img_information['label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${cifar10_classes[parseInt(img_information['real_label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
+                } else if (dataset_type === "SteeringAngle") {
                     // 显示类别信息
                     document.getElementById("classified-as_1").innerText = ((img_information['label']['M1'] - 0.5) * 160).toFixed(); //cifar10_classes数组在image_type_grid.js中定义
+                }else if (dataset_type === "GTSRB") {
+                    // 显示类别信息
+                    // document.getElementById("classified-as_1").innerText = GTSRB_classes[parseInt(img_information['label']['M1'])];
+                    document.getElementById("classified-as_1").innerText = `Pre : ${GTSRB_classes[parseInt(img_information['label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").innerText = `Real: ${GTSRB_classes[parseInt(img_information['real_label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1").setAttribute('title', `Pre : ${GTSRB_classes[parseInt(img_information['label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${GTSRB_classes[parseInt(img_information['real_label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
                 }
                 // 显示鲁棒性
                 document.getElementById("predicted-robustness-value_1").innerText = (parseFloat(img_information['img_robustness']['M1']) * 1000).toFixed(0);
                 // 显示置信度
                 // show_confidence(img_information['layer']['M1'], "left")
-                show_confidence_single(img_information['layer']["M1"])
+                show_confidence_single(img_information['layer']["M1"],img_information['layer_label']["M1"], dataset_type)
                 // 右边部分
                 var model_name = document.getElementById("select_model_selection_compare").value
                 if (model_name != "None") {
@@ -1621,19 +1784,34 @@ locateBtn.addEventListener("click", function () {
                     .attr("fill-opacity", "1")
                 // 修改左边示例图
                 d3.select("#click_img").attr("src", "../static/example/pic/" + String(img_number) + ".png?t=" + Math.random())
+                d3.select("#cam_img").attr("src", "../static/example/pic/" + String(img_number) + "_cam.png?t=" + Math.random())
+
                 var dataset_type = document.getElementById("select_dataset_type_selection").value
-                if (dataset_type == "CIFAR10") {
+                if (dataset_type === "CIFAR10") {
                     // 显示类别信息
-                    document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
-                } else if (dataset_type == "SteeringAngle") {
+                    // document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
+                    document.getElementById("classified-as_1").innerText = `Pre : ${cifar10_classes[parseInt(img_information['label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").innerText = `Real: ${cifar10_classes[parseInt(img_information['real_label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1").setAttribute('title', `Pre : ${cifar10_classes[parseInt(img_information['label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${cifar10_classes[parseInt(img_information['real_label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
+                } else if (dataset_type === "SteeringAngle") {
                     // 显示类别信息
                     document.getElementById("classified-as_1").innerText = ((img_information['label']['M1'] - 0.5) * 160).toFixed(); //cifar10_classes数组在image_type_grid.js中定义
+                }else if (dataset_type === "GTSRB") {
+                    // 显示类别信息
+                    // document.getElementById("classified-as_1").innerText = GTSRB_classes[parseInt(img_information['label']['M1'])];
+                    document.getElementById("classified-as_1").innerText = `Pre : ${GTSRB_classes[parseInt(img_information['label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").innerText = `Real: ${GTSRB_classes[parseInt(img_information['real_label']['M1'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1").setAttribute('title', `Pre : ${GTSRB_classes[parseInt(img_information['label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${GTSRB_classes[parseInt(img_information['real_label']['M1'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
                 }
                 // 显示鲁棒性
                 document.getElementById("predicted-robustness-value_1").innerText = (img_information['img_robustness']["M1"] * 1000).toFixed(0);
                 // 显示置信度
                 // show_confidence(img_information['layer']["M1"], "left")
-                show_confidence_single(img_information['layer']["M1"])
+                show_confidence_single(img_information['layer']["M1"],img_information['layer_label']["M1"],dataset_type)
                 // 右边部分
                 var model_name = document.getElementById("select_model_selection_compare").value
                 if (model_name != "None") {
@@ -1703,17 +1881,27 @@ lineBtn.addEventListener("click", function () {
             .style("display", "flex")
         //刚开始进来需要将之前的信息清空
         d3.select("#click_start").attr("src", "../static/example/initial_pic/None.png")
+        d3.select("#cam_start").attr("src", "../static/example/initial_pic/None.png")
+
         d3.select("#click_end").attr("src", "../static/example/initial_pic/None.png")
+        d3.select("#cam_end").attr("src", "../static/example/initial_pic/None.png")
+
+
         // 显示类别信息
         document.getElementById("classified-as_1").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
         document.getElementById("classified-as_2").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
+        document.getElementById("classified-as_1_real").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
+        document.getElementById("classified-as_2_real").innerText = "";
         // 显示鲁棒性
         document.getElementById("predicted-robustness-value_1").innerText = "";
         document.getElementById("predicted-robustness-value_2").innerText = "";
         // 显示置信度
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        show_confidence(zero_confidece, "left")
-        show_confidence(zero_confidece, "right")
+        dataset_type = document.getElementById("select_dataset_type_selection").value
+
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        show_confidence(zero_confidece, zero_confidece_label,dataset_type,"left")
+        show_confidence(zero_confidece, zero_confidece_label,dataset_type,"right")
 
         //热力图事件绑定
         var click_number = 0; //记录点击次数
@@ -1725,23 +1913,30 @@ lineBtn.addEventListener("click", function () {
             var x = offset_xScale_invert(xScale, temp_pos[0]) // 获得偏移后的潜空间2维坐标，再main.html中定义
             var y = offset_yScale_invert(yScale, temp_pos[1])
             d3.selectAll(".div_imgcard_info").style("display", "flex")
-            d3.select("#seconde_type").style("display", "inline-block")
+            d3.select("#seconde_type").style("display", "flex")
             d3.select("#seconde_robustness").style("display", "inline-block")
             //这个if else主要用来控制线
             if (click_number == 0) {
                 //刚开始进来需要将之前的信息清空
                 d3.select("#click_start").attr("src", "../static/example/initial_pic/None.png")
+                d3.select("#cam_start").attr("src", "../static/example/initial_pic/None.png")
+
                 d3.select("#click_end").attr("src", "../static/example/initial_pic/None.png")
+                d3.select("#cam_end").attr("src", "../static/example/initial_pic/None.png")
+
                 // 显示类别信息
                 document.getElementById("classified-as_1").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
                 document.getElementById("classified-as_2").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_1_real").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
+                document.getElementById("classified-as_2_real").innerText = "";
                 // 显示鲁棒性
                 document.getElementById("predicted-robustness-value_1").innerText = "";
                 document.getElementById("predicted-robustness-value_2").innerText = "";
                 // 显示置信度
-                zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                show_confidence(zero_confidece, "left")
-                show_confidence(zero_confidece, "right")
+                zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
+                zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+                show_confidence(zero_confidece,zero_confidece_label,dataset_type, "left")
+                show_confidence(zero_confidece, zero_confidece_label, dataset_type,"right")
 
                 click_number = click_number + 1;
                 firts_click_pos = d3.pointer(event)
@@ -1831,6 +2026,7 @@ lineBtn.addEventListener("click", function () {
             imageTypeGrid_svg_right.style("cursor", "wait");
             var img_informations = await get_image_information_from_python(x = x, y = y, img_name = String(img_number),img_type = 1)
             // 只展示当前模型的信息
+            console.log("点击热力图时候返回的信息： ", img_information)
             var model_id = "M1"
             const radioDNNButtons = document.querySelectorAll('input[name="radio_model"]');
             radioDNNButtons.forEach((radioButton) => {
@@ -1843,38 +2039,70 @@ lineBtn.addEventListener("click", function () {
 
             var img_information = {
                 "label": img_informations['label'][model_id],
+                "real_label": img_informations['real_label'][model_id],
                 "img_robustness": img_informations['img_robustness'][model_id],
-                "layer": img_informations['layer'][model_id]
+                "layer": img_informations['layer'][model_id],
+                "layer_label":img_informations['layer_label'][model_id]
             }
             // 修改左边示例图
             if (click_number == 1) { //因为前面加一了
                 d3.select("#click_start").attr("src", "../static/example/pic/" + String(img_number) + ".png?t=" + Math.random())
+                d3.select("#cam_start").attr("src", "../static/example/pic/" + String(img_number) + "_cam.png?t=" + Math.random())
+
                 var dataset_type = document.getElementById("select_dataset_type_selection").value
                 if (dataset_type == "CIFAR10") {
                     // 显示类别信息
-                    document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label'])]; //cifar10_classes数组在
+                    // document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label'])]; //cifar10_classes数组在
+                    document.getElementById("classified-as_1").innerText = `Pre : ${cifar10_classes[parseInt(img_information['label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").innerText = `Real: ${cifar10_classes[parseInt(img_information['real_label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1").setAttribute('title', `Pre : ${cifar10_classes[parseInt(img_information['label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${cifar10_classes[parseInt(img_information['real_label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
                 } else if (dataset_type == "SteeringAngle") {
                     // 显示类别信息
                     document.getElementById("classified-as_1").innerText = ((img_information['label'] - 0.5) * 160).toFixed(); //cifar10_classes数组在image_type_grid.js中定义
-                } 
+                } else if (dataset_type == "GTSRB") {
+                    // 显示类别信息
+                    // document.getElementById("classified-as_1").innerText = GTSRB_classes[parseInt(img_information['label']['M1'])];
+                    document.getElementById("classified-as_1").innerText = `Pre : ${GTSRB_classes[parseInt(img_information['label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").innerText = `Real: ${GTSRB_classes[parseInt(img_information['real_label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1").setAttribute('title', `Pre : ${GTSRB_classes[parseInt(img_information['label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_1_real").setAttribute('title', `Real: ${GTSRB_classes[parseInt(img_information['real_label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
+                }
                 // 显示鲁棒性
                 document.getElementById("predicted-robustness-value_1").innerText = (img_information['img_robustness'] * 1000).toFixed(0);
                 // 显示置信度
-                show_confidence(img_information['layer'], "left")
+                show_confidence(img_information['layer'], img_information['layer_label'],dataset_type,"left")
             } else { // 右边相关
                 d3.select("#click_end").attr("src", "../static/example/pic/" + String(img_number) + ".png?t=" + Math.random())
+                d3.select("#cam_end").attr("src", "../static/example/pic/" + String(img_number) + "_cam.png?t=" + Math.random())
+
                 var dataset_type = document.getElementById("select_dataset_type_selection").value
                 if (dataset_type == "CIFAR10") {
-                    // 显示类别信息
-                    document.getElementById("classified-as_2").innerText = cifar10_classes[parseInt(img_information['label'])]; //cifar10_classes数组在
+                // 显示类别信息
+                // document.getElementById("classified-as_1").innerText = cifar10_classes[parseInt(img_information['label']['M1'])]; //cifar10_classes数组在
+                    document.getElementById("classified-as_2").innerText = `Pre : ${cifar10_classes[parseInt(img_information['label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2_real").innerText = `Real: ${cifar10_classes[parseInt(img_information['real_label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2").setAttribute('title', `Pre : ${cifar10_classes[parseInt(img_information['label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2_real").setAttribute('title', `Real: ${cifar10_classes[parseInt(img_information['real_label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
                 } else if (dataset_type == "SteeringAngle") {
                     // 显示类别信息
-                    document.getElementById("classified-as_2").innerText = ((img_information['label'] - 0.5) * 160).toFixed(); //cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2").innerText = ((img_information['label']['M1'] - 0.5) * 160).toFixed(); //cifar10_classes数组在image_type_grid.js中定义
+                }else if (dataset_type == "GTSRB") {
+                    // 显示类别信息
+                    // document.getElementById("classified-as_1").innerText = GTSRB_classes[parseInt(img_information['label']['M1'])];
+                    document.getElementById("classified-as_2").innerText = `Pre : ${GTSRB_classes[parseInt(img_information['label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2_real").innerText = `Real: ${GTSRB_classes[parseInt(img_information['real_label'])]}`;//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2").setAttribute('title', `Pre : ${GTSRB_classes[parseInt(img_information['label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+                    document.getElementById("classified-as_2_real").setAttribute('title', `Real: ${GTSRB_classes[parseInt(img_information['real_label'])]}`);//cifar10_classes数组在image_type_grid.js中定义
+
                 }
                 // 显示鲁棒性
                 document.getElementById("predicted-robustness-value_2").innerText = (img_information['img_robustness'] * 1000).toFixed(0);
                 // 显示置信度
-                show_confidence(img_information['layer'], "right")
+                show_confidence(img_information['layer'],img_information['layer_label'],dataset_type, "right")
             }
             //恢复成可以点击状态
             heatMap_svg_right.style("cursor", "pointer");
@@ -1934,6 +2162,8 @@ clearBtn.addEventListener("click", function () {
 
     // 删除左边面板中的单点信息
     d3.select("#click_img").attr("src", "../static/example/initial_pic/None.png")
+    d3.select("#cam_img").attr("src", "../static/example/initial_pic/None.png")
+
     // 显示类别信息
     document.getElementById("classified-as_1").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
     document.getElementById("classified-as_2").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
@@ -1944,7 +2174,10 @@ clearBtn.addEventListener("click", function () {
 
     // 删除左边面板中的图像对比信息
     d3.select("#click_start").attr("src", "../static/example/initial_pic/None.png")
+    d3.select("#cam_start").attr("src", "../static/example/initial_pic/None.png")
     d3.select("#click_end").attr("src", "../static/example/initial_pic/None.png")
+    d3.select("#cam_end").attr("src", "../static/example/initial_pic/None.png")
+
     // 显示类别信息
     document.getElementById("classified-as_1").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
     document.getElementById("classified-as_2").innerText = ""; //cifar10_classes数组在image_type_grid.js中定义
@@ -1954,15 +2187,17 @@ clearBtn.addEventListener("click", function () {
 
     if (lineBtn.checked == true) {
         // 显示置信度
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        show_confidence(zero_confidece, "left")
-        show_confidence(zero_confidece, "right")
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        show_confidence(zero_confidece,zero_confidece_label, "left")
+        show_confidence(zero_confidece,zero_confidece_label, "right")
     } else {
         // 显示置信度
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
         // show_confidence(zero_confidece, "left")
         // show_confidence(zero_confidece, "right")
-        show_confidence_single(zero_confidece)
+        show_confidence_single(zero_confidece, zero_confidece_label,dataset_type)
     }
 
 
@@ -2111,13 +2346,13 @@ radioDNNButtons.forEach((radioButton) => {
 const imageBtn = document.querySelector("#radio_image");
 const classificationBtn = document.querySelector("#radio_classification");
 imageBtn.addEventListener("click", function () {
-    d3.select("#types").style("display", "block");
+    d3.select("#types").style("display", "flex");
     d3.select("#svgContainer_imageGrid_right").style("display", "block");
     d3.select("#svgContainer_typeGrid_right").style("display", "none");
 
 })
 classificationBtn.addEventListener("click", function () {
-    d3.select("#types").style("display", "block");
+    d3.select("#types").style("display", "flex");
     d3.select("#svgContainer_imageGrid_right").style("display", "none");
     d3.select("#svgContainer_typeGrid_right").style("display", "block");
 })

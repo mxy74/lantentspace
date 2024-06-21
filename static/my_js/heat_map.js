@@ -591,10 +591,12 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
        // color = ['#4575b4','#5885bd','#6c95c5','#7fa4ce',
        //     '#93b4d6','#a6c4df','#b9d4e7',
        //     '#cde3f0','#e0f3f8']
-        color = ['#4575b4','#6c95c5','#93b4d6','#b9d4e7',
-           '#e0f3f8','#feefea','#e7c6bc','#eba993',
-            '#f08b6b', '#f46d43']
-
+       //  color = ['#4575b4','#6c95c5','#93b4d6','#b9d4e7',
+       //     '#e0f3f8','#feefea','#e7c6bc','#eba993',
+       //      '#f08b6b', '#f46d43']
+        color = ['#b1e8a5','#c6edbe','#d6f2d0','#e7f7e3',
+           '#f7fcf6','#fff6f5','#fee3e1','#fed1cd',
+            '#fdbeb9', '#f89f99']
 
 
         //  color = [

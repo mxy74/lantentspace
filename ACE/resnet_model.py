@@ -19,7 +19,7 @@ class ResNet20Wrapper:
             bottlenecks = {'avgpool': 'avgpool'}
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        # Load the model
+        # Load the models
         print(model_path)
         self.model = ResNet20.CifarResNet()
         state_dict = torch.load(model_path, map_location=self.device)
@@ -74,9 +74,9 @@ class ResNet20Wrapper:
         return grad(self.ends[:, y], acts)
 
     # def __call__(self, x):
-    #     """ Calls prediction on wrapped model pytorch.
+    #     """ Calls prediction on wrapped models pytorch.
     #     """
-    #     self.ends = self.model(x)
+    #     self.ends = self.models(x)
     #     return self.ends
 
     # 用来获取模型中间层输出的hook
@@ -92,10 +92,10 @@ class ResNet20Wrapper:
 
         return hook
 
-    # def forward_hook(self, model, ten_in, ten_out):
+    # def forward_hook(self, models, ten_in, ten_out):
     #     self.activation.append(copy.deepcopy(ten_out.cpu().detach().numpy()))
     #
-    # def backward_hook(self, model, grad_in, grad_out):
+    # def backward_hook(self, models, grad_in, grad_out):
     #     self.gradient.append(copy.deepcopy(grad_out[0].cpu().detach().numpy()))
 
     def run_examples(self, images, bottleneck_layer):
@@ -105,14 +105,14 @@ class ResNet20Wrapper:
         # Move images to the appropriate device
         # preprocessed_images = preprocessed_images.to(self.device)
 
-        # Forward pass through the model to get activations in the specified bottleneck layer
-        # activations = self.model(images, bottleneck_layer)
+        # Forward pass through the models to get activations in the specified bottleneck layer
+        # activations = self.models(images, bottleneck_layer)
         self.activation = {}
         # print(images.shape)
         # print(images.shape)
         Preprocess_images = torch.tensor(images, dtype=torch.float32)
         Preprocess_images = Preprocess_images.permute(0, 3, 1, 2)
-        self.model.eval()  # Set the model to evaluation mode
+        self.model.eval()  # Set the models to evaluation mode
 
         # 钩子函数
         hook_handle = self.model.avgpool.register_forward_hook(self.get_activation('avgpool'))
@@ -120,7 +120,7 @@ class ResNet20Wrapper:
         activations = self.activation['avgpool']
 
         # 取消fc层
-        # feature_model = copy.deepcopy(self.model)
+        # feature_model = copy.deepcopy(self.models)
         # feature_model.fc = nn.Identity()  # 相当于取消fc层, 这样
         # activations = feature_model(Preprocess_images)
 
@@ -168,7 +168,7 @@ class ResNet20Wrapper:
         new_model_list = OrderedDict()
         add_to_list = False
         for name, layer in self.model.named_children():
-            # for name, layer in self.model.named_modules():
+            # for name, layer in self.models.named_modules():
             if add_to_list:
                 if not 'aux' in name:
                     if name == 'fc':
@@ -187,12 +187,12 @@ class ResNet20Wrapper:
     #     Preprocess_images = torch.tensor(imgs, dtype=torch.float32)
     #     Preprocess_images = Preprocess_images.permute(0, 3, 1, 2)
     #
-    #     # self.model.avgpool.register_backward_hook(self.get_gradient('avgpool'))
-    #     model_output = self.model(Preprocess_images)
+    #     # self.models.avgpool.register_backward_hook(self.get_gradient('avgpool'))
+    #     model_output = self.models(Preprocess_images)
     #     # Zero gradients
-    #     self.model.zero_grad()
+    #     self.models.zero_grad()
     #     # acts = self.bottlenecks_tensors[bottleneck_layer]
-    #     self.model.avgpool.register_forward_hook(self.get_activation('avgpool'))
+    #     self.models.avgpool.register_forward_hook(self.get_activation('avgpool'))
     #     acts = self.activation['avgpool']
     #     # print(acts)
     #     # 第二个元素是输入张量的梯度。这个输入张量是调用 grad 函数时传入的张量，计算相对于它的梯度。,第一个元素才是我们需要的
@@ -210,9 +210,9 @@ class ResNet20Wrapper:
     #
     #
     #
-    #     # self.model.avgpool.register_backward_hook(self.get_gradient('avgpool'))
-    #     model_output = self.model(Preprocess_images)
-    #     # self.model.zero_grad()
+    #     # self.models.avgpool.register_backward_hook(self.get_gradient('avgpool'))
+    #     model_output = self.models(Preprocess_images)
+    #     # self.models.zero_grad()
     #
     #
     #

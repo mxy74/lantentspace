@@ -34,17 +34,17 @@ body {
 
 }
 #confidence_distribution {
-    width: 400px;
+    width: 300px;
 
 }
 .div_imgcard_info_rob,
 .div_imgcard_info {
-    width: 400px;
-    height: 35px;
+    width: 300px;
+    height: 40px;
     text-align: center;
     flex-direction: row ;
     justify-content: center;
-    align-items: center;
+    /*align-items: center;*/
     display: flex;
 }
 
@@ -55,26 +55,31 @@ body {
 
 .div_imgcard_info_p {
     /*float: left;*/
-    width: 90px;
-    height: 25px;
+    width: 150px;
+    height: 40px;
+    display: flex;
+    flex-direction: column; /* 使内部元素垂直排列 */
+    justify-content: center;
+    align-items: center;
+
 
     /* border-bottom: 2px solid #929294; */
 }
 
 #div_bottom_line1 {
-    width: 380px;
+    width: 300px;
     margin: auto;
     border-bottom: 3px solid #929294;
 }
 
 #div_bottom_line2 {
-    width: 380px;
+    width: 300px;
     margin: auto;
     border-bottom: 2px solid #929294;
 }
 
 #div_bottom_line3 {
-    width: 380px;
+    width: 300px;
     margin: auto;
     border-bottom: 3px solid #929294;
 }
@@ -86,10 +91,10 @@ body {
     align-items: center;
 }
 #div_compare_pic {
-    height: 25px;
-    width: 400px;
+    height: 40px;
+    width: 300px;
     display: flex;
-    justify-content: center;
+    /*justify-content: center;*/
     /*align-items: center;*/
 }
 
@@ -161,7 +166,7 @@ body {
 #panal_left_down {
     background-color: white;
     height: 802px;
-    width: 400px;
+    width: 300px;
     margin-top: 2px;
     margin-left: 2px;
     margin-right: 2px;
@@ -385,7 +390,7 @@ body {
 #div_rightControlContainer {
     /*position: relative;*/
     float: left;
-    width: 100px;
+    width: 60px;
 }
 
 .form-check-label {
@@ -398,6 +403,13 @@ body {
 .form-check-input:checked {
     background-color: #929294;
     border-color: #dedede;
+}
+
+#svgContainer_confusion_matrix
+{
+    width: 100%;
+    height: 400px;
+    /*overflow-x: auto; !* 允许滚动 *!*/
 }
 
 /* .input_radio {
@@ -413,11 +425,35 @@ body {
 
 #types,
 #types_right{
-    float: left;
-    height: 415px;
-    width: 53px;
-    margin-top: 328px;
-    /* background-color: white; */
+    /*float: left;*/
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* 子元素靠底部对齐 */
+    height: 710px;
+    width: 60px;
+    align-items: center; /* 子元素水平居中对齐 */
+}
+/* 自定义滚动条 */
+#types::-webkit-scrollbar,
+#types_right::-webkit-scrollbar {
+    width: 5px; /* 滚动条宽度 */
+    height: 5px;
+}
+
+/* 滚动条轨道 */
+#types::-webkit-scrollbar-track,
+#types_right::-webkit-scrollbar-track {
+    background: #eeeeee; /* 轨道背景颜色 */
+}
+/* 滚动条滑块 */
+#types::-webkit-scrollbar-thumb,
+#types_right::-webkit-scrollbar-thumb {
+    background: #5b5b5b; /* 滑块颜色 */
+}
+/* 滚动条滑块悬停状态 */
+#types::-webkit-scrollbar-thumb:hover,
+#types_right::-webkit-scrollbar-thumb:hover {
+    background: #313131; /* 滑块悬停颜色 */
 }
 
 .control_btn {
@@ -453,11 +489,35 @@ body {
 }
 
 .color_block {
-    margin: auto;
+    /*margin: auto;*/
     width: 30px;
     height: 15px;
     margin-top: 8px;
 }
+
+.color_block_no_text {
+    /*margin: auto;*/
+    width: 30px;
+    height: 8px;
+    margin-top: 5px;
+}
+
+
+
+.color_block_no_text:hover::before {
+    /*content: attr(title); !* 使用 title 属性作为悬浮提示 *!*/
+    /*position: absolute;*/
+    /*bottom: 25px;*/
+    /*left: 0;*/
+    /*background: #333;*/
+    /*color: #fff;*/
+    /*padding: 5px;*/
+    /*border-radius: 3px;*/
+    /*white-space: nowrap;*/
+    /*z-index: 1000;*/
+}
+
+
 .color_block_rob {
     margin: auto;
     width: 30px;
@@ -492,18 +552,6 @@ body {
 }
 
 #click_img_div {
-    width: 80px;
-    height: 80px;
-    margin: auto;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-#click_img {
-    border: 1px solid rgb(24, 21, 21);
-}
-
-#compare_img_div {
     width: 160px;
     height: 80px;
     margin: auto;
@@ -511,10 +559,33 @@ body {
     margin-bottom: 10px;
 }
 
+#click_img,
+#cam_img{
+    width: 65px;
+    height: 65px;
+    border: 1px solid rgb(24, 21, 21);
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    float: left;
+}
+
+#compare_img_div {
+    width: 300px;
+    height: 80px;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 #click_start,
+#cam_start,
+#cam_end,
 #click_end {
-    width: 70px;
-    height: 70px;
+    width: 65px;
+    height: 65px;
     border: 1px solid rgb(24, 21, 21);
     margin: auto;
     margin-top: 10px;
@@ -538,12 +609,21 @@ body {
 }
 
 .imgcard_variable_p {
-    font-size: small;
+    position: relative; /* 相对定位父元素 */
+    margin: 0;
+    padding: 0;
+    font-size: x-small;
     font-weight: 500;
     font-family: "Helvetica Neue", Helvetica, sans-serif;
     color: #000;
+    white-space: nowrap; /* 禁止换行 */
+    overflow: hidden; /* 超出部分隐藏 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+    max-width: 130px; /* 设置最大宽度，根据需要调整 */
+    cursor: pointer;
 }
-
+.imgcard_variable_p:hover{
+}
 /* .spinner-border {
     position: absolute;
     top: 362px;

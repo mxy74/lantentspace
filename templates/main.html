@@ -30,8 +30,10 @@
             </div>
             <select class="panal_top_element  form-select  form-select-sm  shadow-none" aria-label="model selection"
                 id="select_dataset_type_selection">
-                <option value="CIFAR10" selected>CIFAR10</option>
+                <option value="GTSRB" selected>GTSRB</option>
+                <option value="CIFAR10">CIFAR10</option>
                 <option value="SteeringAngle">SteeringAngle</option>
+
             </select>
             <!-- 模型一 -->
             <div class="div_select_label panal_top_element ">
@@ -40,7 +42,8 @@
             <select class="panal_top_element  form-select  form-select-sm  shadow-none" aria-label="model selection"
                 id="select_model_selection">
 <!--                <option value="AlexNet" selected>AlexNet</option>-->
-                <option value="ResNet20" selected>ResNet20</option>
+                <option value="ResNet18" selected>ResNet18</option>
+                <option value="ResNet20">ResNet20</option>
                 <option value="ResNet32">ResNet32</option>
                 <option value="ResNet44">ResNet44</option>
                 <option value="ResNet56">ResNet56</option>
@@ -88,6 +91,8 @@
             <label for="idw_p" id="idw_p_value">50</label>
         </div>
         <!-- ======================================= -->
+
+
 
         <!-- 交互式按钮 -->
         <div class="panal_top_element  btn-group panal" id="map-control" role="group"
@@ -197,14 +202,25 @@
                         </div>
                         <!-- 图片框 -->
                         <div id="click_img_div">
+
                             <!-- 单击图片 -->
-                            <img id="click_img" src="../static/example/initial_pic/None.png"
-                                style="width: 100%; height: 100%">
+                            <img id="click_img" src="../static/example/initial_pic/None.png">
+                             <!-- CAM图片 -->
+                            <img id="cam_img" src="../static/example/initial_pic/None.png">
+
+
                         </div>
                         <div id="compare_img_div" style="display: none;">
                             <!-- 图片对比 -->
-                            <img id="click_start" class="click_start" src="../static/example/initial_pic/None.png">
-                            <img id="click_end" class="click_end" src="../static/example/initial_pic/None.png">
+                            <div class="img-container">
+                                <img id="click_start" class="click_start" src="../static/example/initial_pic/None.png">
+                                <img id="cam_start" src="../static/example/initial_pic/None.png">
+                            </div>
+                            <div class="img-container">
+                                <img id="click_end" class="click_end" src="../static/example/initial_pic/None.png">
+                                <img id="cam_end" src="../static/example/initial_pic/None.png">
+
+                            </div>
                         </div>
 
                         <!-- 模型说明 -->
@@ -235,9 +251,11 @@
 
                             <div class="div_imgcard_info_p">
                                 <P class="imgcard_variable_p" id="classified-as_1"></P>
+                                <P class="imgcard_variable_p" id="classified-as_1_real"></P>
                             </div>
                             <div class="div_imgcard_info_p" id="seconde_type" style="display:none">
                                 <P class="imgcard_variable_p" id="classified-as_2"></P>
+                                <P class="imgcard_variable_p" id="classified-as_2_real"></P>
                             </div>
                         </div>
                         <p class="title_small" style="display: none;" >Robustness</p>
@@ -262,7 +280,8 @@
                             <!-- 鲁棒性分布svg -->
                             <svg id="confidence_distribution">
                                 <g id="bars_1"></g>
-                                <g id="labels"></g>
+                                <g id="labels_1"></g>
+                                <g id="labels_2"></g>
                                 <g id="bars_2"></g>
                             </svg>
                         </div>
@@ -273,9 +292,6 @@
 
                         <div id="svgContainer_confusion_matrix" style="display: block;">
                             <svg id="confusion_matrix_svg">
-<!--                                    <g id="imageTypeGrid_g_right"></g>-->
-                                    <!-- crop裁剪矩形 -->
-<!--                                    <rect id="selection_inner_rect_right"></rect>-->
                             </svg>
                         </div>
 
@@ -553,7 +569,7 @@
                             </div>
                         </div>
 <!--                        类别颜色-->
-                        <div id="types" style="display: block;">
+                        <div id="types" style="display: flex;">
                             <div class="color_block" id="color0" style="background-color:#a6cee3; "></div>
                             <div class="classes_name_div">
                                 <p class="classes_name"></p>
@@ -674,7 +690,7 @@
         // 模型对应的数据
         // var robustness_dict, img_DNN_output_lst_400_dict, img_coords_lst_400_dict; //所有的图片对应的坐标都是一样的，就不用图片字典了
         var robustness_dict, confidence_dict, confidence_fore_dict, img_DNN_for_output_lst_400_dict, img_DNN_output_lst_400_dict,
-            img_coords_lst_400_dict, conf_matrix_dic;
+            img_coords_lst_400_dict, conf_matrix_dic, conf_matrix_label_dic;
         // 鲁棒性颜色
         // var color;
         // var color = ["#fee5d9", "#fcbba1", "#fc9272", "#fb6a4a", "#de2d26", "#a50f15"];

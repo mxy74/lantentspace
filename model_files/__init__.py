@@ -66,6 +66,10 @@ def get_DNN_model(dataset, model_name):
 		elif model_name == "ResNet101_regre":
 			from .SteeringAngle.models import ResNet_regre
 			return ResNet_regre.ResNet101_regre()
+	elif dataset == "GTSRB":
+		if model_name == "ResNet18":
+			from.GTSRB.models import resnet
+			return resnet.ResNet18()
 
 # 获取模型鲁棒性预测器
 classify_model_array = ["AlexNet","ResNet20", "ResNet32", "ResNet44", "ResNet56", "VGG11_BN", "VGG13_BN", "VGG16_BN", "VGG19_BN", "MobileNetV2_x0_5", "MobileNetV2_x0_75", "MobileNetV2_x1_0", "MobileNetV2_x1_4", "ShuffleNetV2_x0_5", "ShuffleNetV2_x1_0", "ShuffleNetV2_x1_5", "ShuffleNetV2_x2_0"]
@@ -83,6 +87,11 @@ def get_rob_predictor(dataset, model_name):
 			from .SteeringAngle.models import Rob_predictor
 			return Rob_predictor.Rob_predictor(number=2048)
 
+	# 实际用不到，先填上GTSRB部分防止报错
+	elif dataset == "GTSRB":
+		if model_name == "ResNet18":
+			from .CIFAR10.models import Rob_predictor
+			return Rob_predictor.Rob_predictor()
 
 # 获取生成式模型
 def get_generative_model(dataset):
@@ -92,7 +101,9 @@ def get_generative_model(dataset):
 	elif dataset == "SteeringAngle":
 		from .SteeringAngle.models import cont_cond_cnn_generator_discriminator
 		return cont_cond_cnn_generator_discriminator.cont_cond_cnn_generator()
-
+	elif dataset == "GTSRB":
+		from .GTSRB.models import CDCGAN_size32
+		return CDCGAN_size32.generator(128)
 # 获取标签到潜向量的映射网络
 def get_mapping(dataset):
 	if dataset == "SteeringAngle":

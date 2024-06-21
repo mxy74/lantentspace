@@ -73,12 +73,12 @@ def prepare_shared_data():
     global tree_2D, dict_zs, data_z_labels  # 2D树和潜向量字典设置为全局变量
 
     dataset_type = data["dataset_type"]
-
+    global G
     # CIFAR10生成模型
     if dataset_type == "CIFAR10":
-        # checkpoints_path = "./model_files/CIFAR10/checkpoints/BigGAN/model=G-best-weights-step=162000.pth"
+        # checkpoints_path = "./model_files/CIFAR10/checkpoints/BigGAN/models=G-best-weights-step=162000.pth"
         checkpoints_path = "./model_files/CIFAR10/checkpoints/BigGAN/model=G-best-weights-step=392000.pth"  # kjl测试#############
-        global G
+
         print("数据类型为：", dataset_type)
         G = model_all.get_generative_model("CIFAR10").to(device)
         G.load_state_dict(torch.load(checkpoints_path, map_location=device)["state_dict"])
@@ -241,6 +241,21 @@ def prepare_shared_data():
         dict_zs = torch.load(data_z_path, map_location="cpu")  # 因为我之前保存数据到了GPU上，所以要回到cpu上才不会出错
         global angles
         angles = torch.load(angles_path, map_location='cuda:0')
+    elif dataset_type == "GTSRB":
+
+        checkpoints_path = "./model_files/GTSRB/checkpoints/cGAN/GTSRB_cDCGAN_generator_param_size32_epoch20.pth"
+        print("数据类型为：", dataset_type)
+        G = model_all.get_generative_model("GTSRB").to(device)
+        G.load_state_dict(torch.load(checkpoints_path))
+        G.eval()
+
+        tree_2D_path = "./static/data/GTSRB/2D_kdTree/2D_kdTree_50000_png_features.pt"
+        data_z_path = "./static/data/GTSRB/latent_z/cGAN_100z_size32_50k.pt"
+        label_path = "./static/data/GTSRB/labels/cGAN_label_size32_50k.pt"
+        tree_2D = torch.load(tree_2D_path)
+        dict_zs = torch.load(data_z_path, map_location="cpu")  # 因为我之前保存数据到了GPU上，所以要回到cpu上才不会出错
+        # print(dict_zs.shape)
+        data_z_labels = torch.load(label_path, map_location="cpu")
 
     print("公共数据准本完毕！")
     return "0"
@@ -254,6 +269,7 @@ def prepare_DNN_data():
 
     model_id = data["model_id"]
     model_name = data["model_name"]
+
     print("model_id: ", model_id)
     print("model_name: ", model_name)
 
@@ -276,16 +292,26 @@ def prepare_DNN_data():
         Global_DNN_model_dict[model_id].load_state_dict(
             torch.load("./model_files/" + dataset_type + "/checkpoints/regre_model/" + model_name + ".pt",
                        map_location=device)["net_state_dict"])
-    else:
+    elif dataset_type == "CIFAR10":
         print("准备分类模型。。。")
         Global_DNN_model_dict[model_id].load_state_dict(
             torch.load("./model_files/" + dataset_type + "/checkpoints/classify_model/" + model_name + ".pt",
                        map_location=device))
+    elif dataset_type == "GTSRB":
+        print("准备分类模型。。。")
+        # 提取模型参数
+        Global_DNN_model_dict[model_id].load_state_dict(
+            torch.load("./model_files/" + dataset_type + "/checkpoints/classify_model/" + model_name + ".pth",
+                       map_location=device)['model'])
     Global_DNN_model_dict[model_id].eval()
     Global_DNN_model_dict[model_id].to(device)
 
     print("准备CAM方法。。。")
-    Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id])
+    if dataset_type == "CIFAR10":
+        Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id])
+    elif dataset_type == "GTSRB":
+        Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id], 'layer4', 'linear')
+
     print("CAM准备完毕。。。")
 
     # 预测模型
@@ -295,11 +321,14 @@ def prepare_DNN_data():
         Global_rob_predictor_dict[model_id].load_state_dict((torch.load(
             "./model_files/" + dataset_type + "/checkpoints/rob_predictor/kjl_rob_predictor_" + model_name + "_wrongAngel=8.0epsilon=0.001epsilon_step=0.001.pt",
             map_location=device)))  # 自动驾驶使用的8度鲁棒性
-    else:
+    elif dataset_type == "CIFAR10":
         Global_rob_predictor_dict[model_id].load_state_dict((torch.load(
             "./model_files/" + dataset_type + "/checkpoints/rob_predictor/kjl_rob_predictor_" + model_name + ".pt",
             map_location=device)))  # 自动驾驶使用的8度鲁棒性
-
+    elif dataset_type == "GTSRB":
+        Global_rob_predictor_dict[model_id].load_state_dict((torch.load(
+            "./model_files/CIFAR10/checkpoints/rob_predictor/kjl_rob_predictor_ResNet20.pt",
+            map_location=device)))  # 自动驾驶使用的8度鲁棒性
     # Global_rob_predictor_dict[model_id].load_state_dict((torch.load("./model_files/"+ dataset_type + "/checkpoints/rob_predictor/kjl_rob_predictor_" + model_name + "_wrongAngel=10.0epsilon=0.001epsilon_step=0.001.pt", map_location=device)))
     # Global_rob_predictor_dict[model_id].load_state_dict((torch.load("./model_files/"+ dataset_type + "/checkpoints/rob_predictor/kjl_rob_predictor_" + model_name + ".pt", map_location=device)))
     # Global_rob_predictor_dict[model_id].load_state_dict((torch.load("./model_files/"+ dataset_type + "/checkpoints/rob_predictor/Rob_predictor_ResNet20.pt", map_location=device)))
@@ -330,6 +359,7 @@ def get_information_data():
     img_DNN_for_output_lst_400_dict = {}
     img_coords_lst_400_dict = {}
     conf_matrix_dic = {}
+    conf_matrix_label_dic = {}
     print("Global_DNN_model_dict.keys: ", Global_DNN_model_dict.keys())
     # 循环遍历模型字典中的每一个
     copy_dict = Global_DNN_model_dict.copy()  # 需要复制一下，避免运行时添加字典出错
@@ -347,7 +377,7 @@ def get_information_data():
         #     mask_threshold=0.5)
         # 不对前景使用cam，背景取一个方块
         confidence_imgs, confidence_fore_imgs, img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400, \
-            conf_matrix_list = my_tools.get_information_backmix(
+            conf_matrix_list, conf_matrix_label = my_tools.get_information_backmix(
             coordinates, tree_2D, dict_zs, data_z_labels, G=G, DNN_model=DNN_model, CAMmethod=CAMmethod,
             dataset_type=dataset_type, idw_p=idw_p, mask_threshold=0.25)
         # robustness_dict[key] = list(format(float(n), '.3f')  for n in robustness)
@@ -358,6 +388,7 @@ def get_information_data():
         img_coords_lst_400_dict[key] = list(
             [format(float(n[0]), '.3f'), format(float(n[1]), '.3f')] for n in img_coords_lst_400)
         conf_matrix_dic[key] = conf_matrix_list
+        conf_matrix_label_dic[key] = conf_matrix_label
         # print(f'%s的51号类别：%.2f'%(key, float(img_DNN_output_lst_400_dict[key][51])))
     return jsonify(
         {
@@ -367,7 +398,8 @@ def get_information_data():
             "img_DNN_output_lst_400_dict": img_DNN_output_lst_400_dict,  # 400张图片对应的类别
             "img_DNN_for_output_lst_400_dict": img_DNN_for_output_lst_400_dict,
             "img_coords_lst_400_dict": img_coords_lst_400_dict,  # 400张图片对应的坐标（后面用来当作图片的唯一id）
-            "conf_matrix_dic": conf_matrix_dic   # 混淆矩阵
+            "conf_matrix_dic": conf_matrix_dic,  # 混淆矩阵
+            "conf_matrix_label_dic": conf_matrix_label_dic
         })
 
 
@@ -383,35 +415,50 @@ def get_image_information():
 
     # 将不同模型的结果保存到字典中
     label_dict = {}
+    real_label_dict = {}
     img_robustness_dict = {}
     layer_dict = {}
+    layer_label_dict = {}
     # 循环遍历模型字典中的每一个
     copy_dict = Global_DNN_model_dict.copy()  # 需要复制一下，避免运行时添加字典出错
 
     for key in copy_dict:
+        CAMmethod = Global_CAM_method_dict[key]
         DNN_model = Global_DNN_model_dict[key]
         Rob_predictor = Global_rob_predictor_dict[key]
-        label, img_robustness, layer = my_tools.get_image_information_other(points, img_type, tree_2D, dict_zs, G=G,
-                                                                            DNN_model=DNN_model,
-                                                                            Rob_predictor=Rob_predictor,
-                                                                            img_name=img_name,
-                                                                            dataset_type=dataset_type, idw_p=idw_p)
+        label, real_labels, img_robustness, layer = my_tools.get_image_information_other(points, img_type, tree_2D,
+                                                                                         dict_zs,
+                                                                                         data_z_labels, G=G,
+                                                                                         DNN_model=DNN_model,
+                                                                                         CAMmethod=CAMmethod,
+                                                                                         Rob_predictor=Rob_predictor,
+                                                                                         img_name=img_name,
+                                                                                         dataset_type=dataset_type,
+                                                                                         idw_p=idw_p)
         # 取指数运算
         soft_max = nn.Softmax(dim=1)
         soft_layer = soft_max(layer)[0]
         # print("soft_layer: ", soft_layer)
-
+        top_values, top_indices = torch.topk(soft_layer, 8)
+        # 将 top_indices 转换为 numpy 数组，以便后续处理
+        top_indices = top_indices.numpy()
+        top_values = top_values.numpy()
+        # print(top_indices)
         label_dict[key] = float(label)
         img_robustness = float(img_robustness)
         img_robustness_dict[key] = max(img_robustness, 0)
-        layer_dict[key] = list([format(float(n), '.5f')] for n in soft_layer)
+        layer_dict[key] = list([format(float(n), '.3f')] for n in top_values)
+        layer_label_dict[key] = list(format(int(n)) for n in top_indices)
+        real_label_dict[key] = int(real_labels)
         print("confidence:", layer)
         print("softmax_conf:", layer_dict)
     return jsonify(
         {
             "label": label_dict,
+            "real_label": real_label_dict,
             "img_robustness": img_robustness_dict,
-            "layer": layer_dict
+            "layer": layer_dict,  # 置信度
+            "layer_label": layer_label_dict
         }
     )
 
@@ -424,31 +471,47 @@ def evaluate_image():
     img_name = data["img_name"]
     img_type = data["img_type"]
     # 将不同模型的结果保存到字典中
+    real_label_dict = {}
     label_dict = {}
     img_robustness_dict = {}
     layer_dict = {}
+    layer_label_dict = {}
     # 循环遍历模型字典中的每一个
     copy_dict = Global_DNN_model_dict.copy()  # 需要复制一下，避免运行时添加字典出错
     for key in copy_dict:
         DNN_model = Global_DNN_model_dict[key]
         Rob_predictor = Global_rob_predictor_dict[key]
+        CAMmethod = Global_CAM_method_dict[key]
 
-        label, img_robustness, layer = my_tools.evaluate_img(img_number, img_type, img_name=img_name, G=G,
-                                                             DNN_model=DNN_model,
-                                                             Rob_predictor=Rob_predictor, dataset_type=dataset_type)
+        label, img_real_label, img_robustness, layer = my_tools.evaluate_img(img_number, img_type, img_name=img_name,
+                                                                             G=G,
+                                                                             DNN_model=DNN_model,
+                                                                             CAMmethod=CAMmethod,
+                                                                             Rob_predictor=Rob_predictor,
+                                                                             dataset_type=dataset_type)
         soft_max = nn.Softmax(dim=1)
         soft_layer = soft_max(layer)[0]
+
+        top_values, top_indices = torch.topk(soft_layer, 8)
+        # 将 top_indices 转换为 numpy 数组，以便后续处理
+        top_indices = top_indices.numpy()
+        top_values = top_values.numpy()
+
         # print("soft_layer: ", soft_layer)
         label_dict[key] = float(label)
+        real_label_dict[key] = int(img_real_label)
         img_robustness = float(img_robustness)
         img_robustness_dict[key] = max(img_robustness, 0)
-        layer_dict[key] = list([format(float(n), '.3f')] for n in soft_layer)
+        layer_dict[key] = list([format(float(n), '.3f')] for n in top_values)
+        layer_label_dict[key] = list(format(int(n)) for n in top_indices)
         # print(f'%s的类别：%f'%(key, label_dict[key]))
     return jsonify(
         {
             "label": label_dict,
+            "real_label": real_label_dict,
             "img_robustness": img_robustness_dict,
-            "layer": layer_dict  # 置信度
+            "layer": layer_dict,  # 置信度
+            "layer_label": layer_label_dict
         }
     )
 

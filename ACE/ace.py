@@ -45,19 +45,19 @@ class ConceptDiscovery(object):
                  num_discovery_imgs=40,
                  num_workers=20,
                  average_image_value=117):
-        """Runs concept discovery for a given class in a trained model.
+        """Runs concept discovery for a given class in a trained models.
 
-    For a trained classification model, the ConceptDiscovery class first
+    For a trained classification models, the ConceptDiscovery class first
     performs unsupervised concept discovery using examples of one of the classes
     in the network.
 
     Args:
-      model: A trained classification model on which we run the concept
+      model: A trained classification models on which we run the concept
              discovery algorithm
       target_class: Name of the one of the classes of the network
       random_concept: A concept made of random images (used for statistical
                       test) e.g. "random500_199"
-      bottlenecks: a list of bottleneck layers of the model for which the cocept
+      bottlenecks: a list of bottleneck layers of the models for which the cocept
                    discovery stage is performed
       sess: Model's tensorflow session
       source_dir: This directory that contains folders with images of network's
@@ -358,7 +358,7 @@ class ConceptDiscovery(object):
 
     Args:
       imgs: List/array of images to calculate the activations of
-      bottleneck: Name of the bottleneck layer of the model where activations
+      bottleneck: Name of the bottleneck layer of the models where activations
         are calculated
       bs: The batch size for calculating activations. (To control computational
         cost)
@@ -382,7 +382,7 @@ class ConceptDiscovery(object):
                 end_idx = min((i + 1) * bs, imgs.shape[0])
                 if start_idx < end_idx:  # 确保这一批不为空
                     output.append(
-                        # self.model.run_examples(imgs[i * bs:(i + 1) * bs], bottleneck))
+                        # self.models.run_examples(imgs[i * bs:(i + 1) * bs], bottleneck))
                         self.model.run_examples(imgs[start_idx:end_idx], bottleneck))
         output = np.concatenate(output, 0)
         print("avgpool activate的形状:", output.shape)
@@ -716,7 +716,7 @@ class ConceptDiscovery(object):
     """
 
         gradients = {}
-        # class_id = self.model.label_to_id(self.target_class.replace('_', ' '))
+        # class_id = self.models.label_to_id(self.target_class.replace('_', ' '))
         class_id = self.class_number
         for bn in self.bottlenecks:
             acts = get_acts_from_images(images, self.model, bn)
@@ -725,7 +725,7 @@ class ConceptDiscovery(object):
             for i in range(len(acts)):
                 bn_grads[i] = self.model.get_gradient(
                     acts[i:i + 1], [class_id], bn).reshape(-1)
-                # bn_grads[i] = self.model.get_gradient(
+                # bn_grads[i] = self.models.get_gradient(
                 #     images[i:i + 1], [class_id], bn).reshape(-1)
             gradients[bn] = bn_grads
             print("gradient de 形状",bn_grads.shape)

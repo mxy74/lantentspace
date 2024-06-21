@@ -82,6 +82,7 @@ async function get_information_from_python(extent, xScale, yScale) {
             img_DNN_output_lst_400_dict = data.img_DNN_output_lst_400_dict;
             img_coords_lst_400_dict = data.img_coords_lst_400_dict;
             conf_matrix_dic = data.conf_matrix_dic
+            conf_matrix_label_dic = data.conf_matrix_label_dic
             // console.log("get_information_from_python中img_types_lst_400_dict：",img_DNN_output_lst_400_dict)
         })
     return 0;
