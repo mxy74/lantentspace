@@ -4,6 +4,9 @@ import sys
 import torchvision.transforms.functional as TF
 from sklearn.metrics import confusion_matrix
 
+from python_files.weather_effect import apply_sunny_effect, apply_snowy_effect, apply_foggy_effect, \
+    apply_reflection_effect, apply_rainy_effect
+
 python_files_dir = "./python_files/"  # python工具包位置
 sys.path.append(python_files_dir)
 import fid_score as official_fid
@@ -845,13 +848,35 @@ def get_backmix(z, z_label, G, DNN_model, CAMmethod, mask_threshold, dataset_typ
         fore_max_value, fore_label = torch.max(fore_layers, dim=1)
 
         max_pro_id = fore_layers.squeeze(0).argmax().item()
-        # 解释图像并获取 CAM
-        cams = CAMmethod(max_pro_id, fore_layers)
-        # 展开成32*32
 
-        cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear',
-                                               align_corners=False)
+        # # 解释图像并获取 CAM
+        # cams = CAMmethod(max_pro_id, fore_layers)
+        # # 展开成32*32
+        # cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear',
+        #                                        align_corners=False)
+        cams = torch.zeros([1, 1, 32, 32])
         # [1,1,32,32]
+    # elif dataset_type == "GTSRB":
+    #
+    #     onehot = torch.zeros(43, 43)
+    #     onehot = onehot.scatter_(1, torch.LongTensor(list(range(43))).view(43, 1), 1).view(43, 43, 1, 1)
+    #     # print(z_label)
+    #     z_label = z_label.long()
+    #     label_onehot = onehot[z_label]
+    #     # print(z.shape,label_onehot.shape)
+    #
+    #     imgs = G(z, label_onehot.to(device))
+    #     # DNN_model.layer3.register_forward_hook(get_activation('layer3'))
+    #
+    #     layers = DNN_model(imgs)  # 分类模型分类图片
+    #     # CAMlayer = activation['layer3']
+    #     max_value, label = torch.max(layers, dim=1)
+    #
+    #     masked_random_image_tensor, fore_layers, fore_max_value, fore_label = imgs, layers, max_value, label
+    #     cams = CAMmethod(fore_label.item(), fore_layers)
+    #     cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear',
+    #                                            align_corners=False)
+    # 太慢了，调试过程先用简单的
     elif dataset_type == "GTSRB":
         onehot = torch.zeros(43, 43)
         onehot = onehot.scatter_(1, torch.LongTensor(list(range(43))).view(43, 1), 1).view(43, 43, 1, 1)
@@ -868,17 +893,32 @@ def get_backmix(z, z_label, G, DNN_model, CAMmethod, mask_threshold, dataset_typ
         max_value, label = torch.max(layers, dim=1)
 
 
-        # 加天气效果
+        # 随机加天气效果
+        effects = {
+            "Sunny": apply_sunny_effect,
+            "Rainy": apply_rainy_effect,
+            "Snowy": apply_snowy_effect,
+            "Foggy": apply_foggy_effect,
+            "Reflection": apply_reflection_effect
+        }
 
+        # 随机选择一个效果
+        chosen_effect_name = random.choice(list(effects.keys()))
+        chosen_effect_func = effects[chosen_effect_name]
 
-        masked_random_image_tensor = imgs
-        fore_layers = layers
-        fore_max_value = max_value
-        fore_label = label
+        imgs = imgs.squeeze(0)
+        masked_random_image_tensor = chosen_effect_func(imgs)
+        masked_random_image_tensor = masked_random_image_tensor.unsqueeze(0)
+
+        fore_layers = DNN_model(masked_random_image_tensor)
+        fore_max_value, fore_label = torch.max(fore_layers, dim=1)
+
         # print(fore_label,fore_layers)
-        cams = CAMmethod(fore_label.item(), fore_layers)
-        cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear',
-                                               align_corners=False)
+        # cams = CAMmethod(fore_label.item(), fore_layers)
+        # cams = torch.nn.functional.interpolate(cams[0].unsqueeze(0), size=(32, 32), mode='bilinear',
+        #                                        align_corners=False)
+        cams = torch.zeros([1, 1, 32, 32])
+
         # [1,1,32,32]
 
     return imgs, layers, max_value, label, masked_random_image_tensor, fore_layers, fore_max_value, fore_label, cams
@@ -938,7 +978,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                             idw_p=50,
                             mask_threshold=0.25):
     # 根据k个最近邻坐标，计算出坐标对应的z
-    print("取z中.....")
+    print("地图整个取z中.....")
     time3 = time.time()
 
     zs, zs_labels = get_zs_idw_class(coordinates, tree_2D, dict_zs, data_z_labels, dataset_type, p=idw_p)
@@ -1079,98 +1119,105 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
         elif dataset_type == "GTSRB":
             num_classes = 43
         conf_matrix = confusion_matrix(zs_labels_np, fore_labels_np, labels=np.arange(num_classes))
+        # -----------------------------------------------------------------------------------------------------
+        # 按照单个元素多少排列
+        # if dataset_type == "CIFAR10":
+        #
+        #     conf_matrix_list = conf_matrix.tolist()
+        #     conf_matrix_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        #
+        # if dataset_type == "GTSRB":
+        #     conf_matrix_list = conf_matrix.tolist()
+        #     # 初始化一个列表来存储错误数量及其对应的正确类别和错误类别
+        #     errors = []
+        #     # 遍历混淆矩阵，忽略对角线元素
+        #     for i in range(len(conf_matrix_list)):
+        #         for j in range(len(conf_matrix_list[i])):
+        #             if i != j:  # 忽略对角线元素
+        #                 errors.append((conf_matrix_list[i][j], i, j))
+        #
+        #     # 按错误数量排序，降序排列
+        #     errors.sort(key=lambda x: x[0], reverse=True)
+        #     # 获取前 N 个错误数量最多的元素
+        #     N = 5  # 例如，获取前 5 个
+        #     top_errors = errors[:N]
+        #
+        #     for error in top_errors:
+        #         print(f"Error count: {error[0]}, Correct class (i): {error[1]}, Incorrect class (y): {error[2]}")
+        #
+        #     # 初始化一个集合来存储唯一的类别
+        #     unique_labels = set()
+        #
+        #     # 从错误最高的开始，直到集合中有 10 个唯一的类别
+        #     for error in errors:
+        #         if len(unique_labels) >= 10:
+        #             break
+        #         unique_labels.add(error[1])  # 正确类别
+        #         unique_labels.add(error[2])  # 错误类别
+        #
+        #     # print("Unique labels:", unique_labels)
+        #     conf_matrix_label = list(unique_labels)
+        #     conf_matrix_label = sorted(conf_matrix_label, key=lambda x: x, reverse=False)
+        # -----------------------------------------------------------------------------------------------------
 
-        # 将混淆矩阵转换为嵌套列表（用于JSON序列化）
-        if dataset_type == "CIFAR10":
 
-            conf_matrix_list = conf_matrix.tolist()
-            conf_matrix_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-        if dataset_type == "GTSRB":
-            conf_matrix_list = conf_matrix.tolist()
-            # 初始化一个列表来存储错误数量及其对应的正确类别和错误类别
-            errors = []
-            # 遍历混淆矩阵，忽略对角线元素
-            for i in range(len(conf_matrix_list)):
-                for j in range(len(conf_matrix_list[i])):
-                    if i != j:  # 忽略对角线元素
-                        errors.append((conf_matrix_list[i][j], i, j))
-
-            # 按错误数量排序，降序排列
-            errors.sort(key=lambda x: x[0], reverse=True)
-            # 获取前 N 个错误数量最多的元素
-            N = 5  # 例如，获取前 5 个
-            top_errors = errors[:N]
-
-            for error in top_errors:
-                print(f"Error count: {error[0]}, Correct class (i): {error[1]}, Incorrect class (y): {error[2]}")
-
-            # 初始化一个集合来存储唯一的类别
-            unique_labels = set()
-
-            # 从错误最高的开始，直到集合中有 10 个唯一的类别
-            for error in errors:
-                if len(unique_labels) >= 10:
-                    break
-                unique_labels.add(error[1])  # 正确类别
-                unique_labels.add(error[2])  # 错误类别
-
-            # print("Unique labels:", unique_labels)
-            conf_matrix_label = list(unique_labels)
-            conf_matrix_label = sorted(conf_matrix_label, key=lambda x: x, reverse=False)
-
-
-
-
-            # # 计算沿x轴（每个类别的预测错误率）
-            # error_rates_x = []
-            # for i in range(num_classes):
-            #     total = np.sum(conf_matrix[i, :])
-            #     if total == 0:
-            #         error_rate = 0  # 如果类别i没有出现，错误率设为0
-            #     else:
-            #         error_rate = 1 - conf_matrix[i, i] / total
-            #     error_rates_x.append((i, total, error_rate))  # 将索引加1
+            # # 输出结果
+            # print("错误率最高的5个类别（沿x轴）:")
+            # for cls, total, rate in error_rates_x_sorted:
+            #     print(f"类别 {cls} 的错误率: {rate:.2f},样本总数：{total}")
             #
-            # # 计算沿y轴（每个类别的错认率）
-            # error_rates_y = []
-            # for i in range(num_classes):
-            #     total = np.sum(conf_matrix[:, i])
-            #     if total == 0:
-            #         error_rate = 0  # 如果类别i没有出现，错认率设为0
-            #     else:
-            #         error_rate = 1 - conf_matrix[i, i] / total
-            #     error_rates_y.append((i, total, error_rate))  # 将索引加1
-            #
-            # # 找到样本数最高的20个类别
-            # error_rates_x_sorted = sorted(error_rates_x, key=lambda x: x[1], reverse=True)[:20]
-            #
-            # # 找到样本数最高的20个类别
-            # error_rates_y_sorted = sorted(error_rates_y, key=lambda x: x[1], reverse=True)[:20]
-            #
-            # # 找到错误率最高的5个类别
-            # error_rates_x_sorted = sorted(error_rates_x_sorted, key=lambda x: x[2], reverse=True)[:5]
-            #
-            # # 找到错误率最高的5个类别
-            # error_rates_y_sorted = sorted(error_rates_y_sorted, key=lambda x: x[2], reverse=True)[:5]
-            #
-            # # # 输出结果
-            # # print("错误率最高的5个类别（沿x轴）:")
-            # # for cls, total, rate in error_rates_x_sorted:
-            # #     print(f"类别 {cls} 的错误率: {rate:.2f},样本总数：{total}")
-            # #
-            # # print("\n总容易被错认的5个类别（沿y轴）:")
-            # # for cls, total, rate in error_rates_y_sorted:
-            # #     print(f"类别 {cls} 的错认率: {rate:.2f},样本总数：{total}")
-            #
+            # print("\n总容易被错认的5个类别（沿y轴）:")
+            # for cls, total, rate in error_rates_y_sorted:
+            #     print(f"类别 {cls} 的错认率: {rate:.2f},样本总数：{total}")
+
             # conf_matrix_label = []
             # for cls, total, rate in error_rates_x_sorted:
             #     conf_matrix_label.append(cls)
             # for cls, total, rate in error_rates_y_sorted:
             #     conf_matrix_label.append(cls)
             # conf_matrix_label = sorted(conf_matrix_label, key=lambda x: x, reverse=False)
-            print(conf_matrix_label)
-            conf_matrix_list = [[conf_matrix_list[i][j] for j in conf_matrix_label] for i in conf_matrix_label]
+
+
+        conf_matrix_list = conf_matrix.tolist()
+
+
+        acc_rates_x = []
+        for i in range(num_classes):
+            total = np.sum(conf_matrix[i, :])
+            error_total = np.sum(conf_matrix[i, :]) - conf_matrix[i, i]
+            if total == 0:
+                acc_rate = 1  # 如果类别i没有出现，错误率设为0
+            else:
+                acc_rate = conf_matrix[i, i] / total
+            acc_rates_x.append((i, total, error_total, acc_rate))  # 将索引加1
+
+
+        # 计算沿y轴（每个类别的错认率）
+        acc_rates_y = []
+        for i in range(num_classes):
+            total = np.sum(conf_matrix[:, i])
+            error_total = np.sum(conf_matrix[:, i]) - conf_matrix[i, i]
+            if total == 0:
+                acc_rate = 1  # 如果类别i没有出现，错认率设为0
+            else:
+                acc_rate = conf_matrix[i, i] / total
+            acc_rates_y.append((i, total, error_total, acc_rate))  # 将索引加1
+
+        acc_rates_x_sorted = sorted(acc_rates_x, key=lambda x: x[2], reverse=True)[:10]
+        acc_rates_y_sorted = sorted(acc_rates_y, key=lambda x: x[2], reverse=True)[:10]
+        conf_matrix_label_x = []
+        conf_matrix_acc_x = []
+        for cls, total, error_total, rate in acc_rates_x_sorted:
+            conf_matrix_label_x.append(cls)
+            conf_matrix_acc_x.append(rate)
+
+        conf_matrix_label_y = []
+        conf_matrix_acc_y = []
+        for cls, total, error_total, rate in acc_rates_y_sorted:
+            conf_matrix_label_y.append(cls)
+            conf_matrix_acc_y.append(rate)
+
+        conf_matrix_list = [[conf_matrix_list[i][j] for j in conf_matrix_label_y] for i in conf_matrix_label_x]
 
         # print("CAMlayers.shape: ", CAMlayers.shape)
         # print("binary_cams.shape: ", binary_cams.shape)
@@ -1213,39 +1260,35 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
             # print("foreimg_single.shape", foreimg_single.shape)
             utils.save_image(foreimg_single.detach().cpu(),
                              f'./static/data/' + dataset_type + f'/pic/grid_fore_images/grid_fore_image_{20 * i + j}.png')
-            cam_single = CAMlayers_mix[index]
-            # print("cam_single.shape", cam_single.shape)
-            # cam_single.shape torch.Size([1, 32, 32])
-            # foreimg_single.shape torch.Size([3, 32, 32])
-            # 将 tensor 转换为 numpy 数组并移除批次维度
-            cam_array = cam_single.squeeze().cpu().numpy()
-
-            # 归一化到 0 到 1 的范围内
-            cam_array = (cam_array - cam_array.min()) / (cam_array.max() - cam_array.min())
-
-            # 将归一化后的数组转换为 0 到 255 的范围
-            cam_array = (cam_array * 255).astype(np.uint8)
-
-            # 使用 Matplotlib 将灰度图转换为彩色图
-
-            # 获取颜色映射
-            cmap = plt.colormaps['jet']
-            # 将灰度图应用颜色映射，并转换为 (32, 32, 4) 的 RGBA 图像
-            colored_cam = cmap(cam_array)
-
-            # 转换为 Pillow 图像
-            colored_cam_img = Image.fromarray((colored_cam[:, :, :3] * 255).astype(np.uint8))
-
-            # 添加 Alpha 通道
-            alpha = 0.3  # 可以根据需要调整透明度
-            alpha_channel = (colored_cam[:, :, 3] * alpha * 255).astype(np.uint8)
-            colored_cam_img.putalpha(Image.fromarray(alpha_channel))
-
+            # ------------------cam--------------------------------
+            # cam_single = CAMlayers_mix[index]
+            # cam_array = cam_single.squeeze().cpu().numpy()
+            #
+            # # 归一化到 0 到 1 的范围内
+            # cam_array = (cam_array - cam_array.min()) / (cam_array.max() - cam_array.min())
+            #
+            # # 将归一化后的数组转换为 0 到 255 的范围
+            # cam_array = (cam_array * 255).astype(np.uint8)
+            #
+            # # 使用 Matplotlib 将灰度图转换为彩色图
+            #
+            # # 获取颜色映射
+            # cmap = plt.colormaps['jet']
+            # # 将灰度图应用颜色映射，并转换为 (32, 32, 4) 的 RGBA 图像
+            # colored_cam = cmap(cam_array)
+            #
+            # # 转换为 Pillow 图像
+            # colored_cam_img = Image.fromarray((colored_cam[:, :, :3] * 255).astype(np.uint8))
+            #
+            # # 添加 Alpha 通道
+            # alpha = 0.3  # 可以根据需要调整透明度
+            # alpha_channel = (colored_cam[:, :, 3] * alpha * 255).astype(np.uint8)
+            # colored_cam_img.putalpha(Image.fromarray(alpha_channel))
             # 保存为 PNG 文件
-            output_path = f'./static/data/' + dataset_type + f'/pic/cam_image/cam_image_{20 * i + j}.png'
-            colored_cam_img.save(output_path)
+            # output_path = f'./static/data/' + dataset_type + f'/pic/cam_image/cam_image_{20 * i + j}.png'
+            # colored_cam_img.save(output_path)
+            # --------------------------------------------------
 
-            # save_generate_imgs_tensor.append(all_generate_imgs_tensor[index])
 
             # 未归一化的进行存储，后边用来辅助单个图片的相关信息
             save_generate_imgs_tensor.append(all_generate_imgs_tensor[index])
@@ -1262,6 +1305,12 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
     # save_generate_imgs_tensor = torch.stack(save_generate_imgs_tensor, dim=0)
     # print("save_generate_imgs_tensor.shape",save_generate_imgs_tensor.shape)
     # print("save_generate_imgs_fore_tensor.shape",save_generate_imgs_fore_tensor.shape)
+    torch.save(zs_labels,
+               './static/data/' + dataset_type + '/pic/grid_images_tensor/all_generate_labels.pt')
+    torch.save(all_generate_imgs_tensor,
+               './static/data/' + dataset_type + '/pic/grid_images_tensor/all_generate_imgs_tensor.pt')
+    torch.save(all_generate_foreimgs_tensor,
+               './static/data/' + dataset_type + '/pic/grid_fore_images_tensor/all_generate_foreimgs_tensor.pt')
     torch.save(save_generate_imgs_tensor,
                './static/data/' + dataset_type + '/pic/grid_images_tensor/save_generate_imgs_tensor.pt')
     torch.save(save_generate_imgs_fore_tensor,
@@ -1270,7 +1319,7 @@ def get_information_backmix(coordinates, tree_2D, dict_zs, data_z_labels, G, DNN
                './static/data/' + dataset_type + '/pic/real_label_400/real_label_400.pt')
 
     torch.save(zs_lst_400, "./临时垃圾-随时可删/向量保存/zs_lst_400.pt")
-    return confidence_imgs.detach().cpu().numpy(), confidence_fore_imgs.detach().cpu().numpy(), img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400, conf_matrix_list, conf_matrix_label
+    return confidence_imgs.detach().cpu().numpy(), confidence_fore_imgs.detach().cpu().numpy(), img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400, conf_matrix_list, conf_matrix_label_x, conf_matrix_label_y, conf_matrix_acc_x, conf_matrix_acc_y
 
 
 # 分类过程中获取类别激活图，二值掩码，获得只包括前景的图片
@@ -1505,6 +1554,12 @@ def get_information_mix_conf(coordinates, tree_2D, dict_zs, G, DNN_model, CAMmet
     # save_generate_imgs_tensor = torch.stack(save_generate_imgs_tensor, dim=0)
     # print("save_generate_imgs_tensor.shape",save_generate_imgs_tensor.shape)
     # print("save_generate_imgs_fore_tensor.shape",save_generate_imgs_fore_tensor.shape)
+    # 左边的所有图
+    torch.save(all_generate_imgs_tensor,
+               './static/data/' + dataset_type + '/pic/grid_images_tensor/all_generate_imgs_tensor.pt')
+    torch.save(all_generate_foreimgs_tensor,
+               './static/data/' + dataset_type + '/pic/grid_fore_images_tensor/all_generate_foreimgs_tensor.pt')
+    # 右边的所有图
     torch.save(save_generate_imgs_tensor,
                './static/data/' + dataset_type + '/pic/grid_images_tensor/save_generate_imgs_tensor.pt')
     torch.save(save_generate_imgs_fore_tensor,
@@ -1748,19 +1803,42 @@ def get_image_information(points, tree_2D, dict_zs, G, DNN_model, Rob_predictor,
     sys.stdout.flush()
     return label.detach().cpu(), robustness, layer.detach().cpu()
 
-
+# 计算欧氏距离
+def euclidean_distance(point1, point2):
+    return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 # 使用其他插值方式获取坐标对应的图片
-def get_image_information_other(points, img_type, tree_2D, dict_zs, data_z_labels, G, DNN_model, CAMmethod, Rob_predictor, img_name="one",
+def get_image_information_other(coordinates, points, img_type, tree_2D, dict_zs, data_z_labels, G, DNN_model, CAMmethod, Rob_predictor, img_name="one",
                                 dataset_type="CIFAR10", idw_p=50):
     # 根据k个最近邻坐标，计算出坐标对应的z
-    print("取z中.....")
+    print("地图点击取z中.....")
     sys.stdout.flush()
     time3 = time.time()
     if dataset_type == "SteeringAngle":
         z = get_zs_new_regre([points], tree_2D, dict_zs)
     else:
         z, real_labels = get_zs_idw_class([points], tree_2D, dict_zs, data_z_labels, dataset_type, p=idw_p)
-    print("z.shape: ", z.shape)
+
+    # 不用生成的，用40*40里边的，这样显示出来的都是经过干扰的。
+    # 找到最小距离的索引
+    distances = [euclidean_distance(points, coord) for coord in coordinates]
+    min_index = distances.index(min(distances))
+
+    # 定义文件路径
+    labels_path = './static/data/' + dataset_type + '/pic/grid_images_tensor/all_generate_labels.pt'
+    images_tensor_path = './static/data/' + dataset_type + '/pic/grid_images_tensor/all_generate_imgs_tensor.pt'
+    foreimgs_tensor_path = './static/data/' + dataset_type + '/pic/grid_fore_images_tensor/all_generate_foreimgs_tensor.pt'
+
+    # 读取保存的张量
+    zs_labels = torch.load(labels_path)
+    all_generate_imgs_tensor = torch.load(images_tensor_path)
+    all_generate_foreimgs_tensor = torch.load(foreimgs_tensor_path)
+
+    # 使用索引从 zs_labels 和 all_generate_imgs_tensor 中读取数据
+    nearest_label = zs_labels[min_index]
+    nearest_image = all_generate_foreimgs_tensor[min_index].unsqueeze(0)
+
+    # print("nearest_image",nearest_image.shape)
+
     time4 = time.time()
     print("取z消耗时间：", time4 - time3)
     sys.stdout.flush()
@@ -1768,11 +1846,12 @@ def get_image_information_other(points, img_type, tree_2D, dict_zs, data_z_label
     print("生成图片中.....")
     sys.stdout.flush()
     time5 = time.time()
-    # with torch.no_grad(): # 取消梯度计算，加快运行速度
+
     z = torch.tensor(z).to(torch.float32).to(device)  # latent code
 
     if dataset_type == "CIFAR10":
-        img = G(z)
+        # img = G(z)
+        img = nearest_image
         layer = DNN_model(img)  # 分类模型分类图片
         # label = torch.argmax(layer, dim=1)
         _, label = torch.max(layer.data, 1)
@@ -1788,12 +1867,15 @@ def get_image_information_other(points, img_type, tree_2D, dict_zs, data_z_label
         layer = activation["pool1"]
         layer = layer.view(layer.size(0), -1)
     elif dataset_type == "GTSRB":
-        onehot = torch.zeros(43, 43)
-        onehot = onehot.scatter_(1, torch.LongTensor(list(range(43))).view(43, 1), 1).view(43, 43, 1, 1)
-        # print(z_label)
-        z_label = real_labels.long()
-        label_onehot = onehot[z_label]
-        img = G(z, label_onehot.to(device))
+        # onehot = torch.zeros(43, 43)
+        # onehot = onehot.scatter_(1, torch.LongTensor(list(range(43))).view(43, 1), 1).view(43, 43, 1, 1)
+        # z_label = real_labels.long()
+        # label_onehot = onehot[z_label]
+        # img = G(z, label_onehot.to(device))
+        # print("G生成的img",img.shape)
+
+        img = nearest_image
+
         layer = DNN_model(img)  # 分类模型分类图片
         # label = torch.argmax(layer, dim=1)
         _, label = torch.max(layer.data, 1)
@@ -1850,7 +1932,7 @@ def get_image_information_other(points, img_type, tree_2D, dict_zs, data_z_label
     time6 = time.time()
     print("生成图片消耗时间：", time6 - time5)
     sys.stdout.flush()
-    return label.detach().cpu(), real_labels, robustness, layer.detach().cpu()
+    return label.detach().cpu(), nearest_label, robustness, layer.detach().cpu()
 
 
 # 对输入的图片进行评估(通过get_information_other中保存的tensor进行复现)

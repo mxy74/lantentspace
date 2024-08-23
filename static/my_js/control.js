@@ -140,28 +140,6 @@ modelSelect2.addEventListener("change", async function () {
         change_matrix()
     })
 })
-// 分辨率事件~~~~~~~~~~~~~~~~~~~~~~~~~~~
-d3.select("#resolution").on("change", () => {
-    // 先清除东西
-    const clearBtn = document.querySelector("#btn_clear");
-    clearBtn.click()
-    bins = document.getElementById("resolution").value; //bing全局变量在main.html中定义
-    //获取鲁棒性(鲁棒性等信息保存在全局变量中)，之后再调用其他方法
-    get_information_from_python(extent = extent, xScale = xScale, yScale = yScale).then(function () {
-        zoom_updata_all() //该函数来源于zoom.js
-    })
-});
-// 反距离指数事件~~~~~~~~~~~~~~~~~~~~~~~~~~~
-d3.select("#idw_p").on("change", () => {
-    // 先清除东西
-    const clearBtn = document.querySelector("#btn_clear");
-    clearBtn.click()
-    bins = document.getElementById("resolution").value; //bing全局变量在main.html中定义
-    //获取鲁棒性(鲁棒性等信息保存在全局变量中)，之后再调用其他方法
-    get_information_from_python(extent = extent, xScale = xScale, yScale = yScale).then(function () {
-        zoom_updata_all() //该函数来源于zoom.js
-    })
-});
 
 
 // 缩小事件~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -815,6 +793,7 @@ brushBtn.addEventListener("click", function () {
 // }
 
 function show_confidence(confidence,confidence_label,dataset_type, side) {
+    dataset_type = document.getElementById("select_dataset_type_selection").value
 
     // console.log(index_max, index_max_2);
     const svg_width = 400;
@@ -837,16 +816,20 @@ function show_confidence(confidence,confidence_label,dataset_type, side) {
         .attr("height", svg_height)
     svg_confidence.select("#bars_1")
         .attr("class", "bars1")
-        .attr("transform", "translate(20, 0)");
+        .attr("transform", "translate(50, 0)");
+
     svg_confidence.select("#labels_1")
         .attr("class", "labels")
-        .attr("transform", "translate(20, 70)")
+        .attr("transform", "translate(50, 70)")
+
     svg_confidence.select("#labels_2")
         .attr("class", "labels")
-        .attr("transform", "translate(20, 95)")
+        .attr("transform", "translate(50, 95)")
     svg_confidence.select("#bars_2")
         .attr("class", "bars2")
-        .attr("transform", "translate(20, 125)")
+        .attr("transform", "translate(50, 125)")
+
+
 
     if (side == "left") {
         // d3.select('#bars_1')
@@ -928,13 +911,34 @@ function show_confidence(confidence,confidence_label,dataset_type, side) {
             })
             .attr("font-family", "Consolas, courier");
         if(dataset_type === "CIFAR10"){
+
             d3.select('#labels_1')
                 .selectAll('image')
                 .remove()
             d3.select('#labels_1')
                 .selectAll('text')
+                .remove()
+
+            // console.log(d3.select('#labels_1').html())
+                // 添加表示 "image1"
+            console.log("添加Image1")
+            d3.select('#labels_1')
+                // .append('g')
+                // .attr('class', 'image-label')
+                .append('text') // 在第一个子元素之前插入文本元素
+                .text("Img1")
+                .attr('x', -10) // 负边距，确保在左侧
+                .attr('y', 15) // 确保标签在顶部
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold'); // 右对齐
+            // console.log(d3.select('#labels_1').html())
+            d3.select('#labels_1')
+                .selectAll('text.class-label') // 使用更具体的选择器
+                // .selectAll('text')
                 .data(class_names) //cifar10_classes数组在image_type_grid.js中定义
                 .join('text')
+                .attr('class', 'class-label')
+
                 .attr('x', function (d, i) {
                     return i * (rect_height + margin) + rect_height / 2;
                 })
@@ -943,11 +947,21 @@ function show_confidence(confidence,confidence_label,dataset_type, side) {
                 })
                 .attr('y', 15) // 确保标签在顶部
                 .style('text-anchor', 'middle');
+            // console.log(d3.select('#labels_1').html())
         }
         else if(dataset_type === "GTSRB"){
             d3.select('#labels_1')
                 .selectAll('text')
                 .remove()
+            d3.select('#labels_1')
+                .append('text') // 在第一个子元素之前插入文本元素
+                .text("Image1")
+                .attr('x', -3) // 负边距，确保在左侧
+                .attr('y', 20) // 确保标签在顶部
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold'); // 右对齐
+
+
             d3.select('#labels_1')
                 .selectAll('image')
                 .data(confidence_label)
@@ -1036,8 +1050,23 @@ function show_confidence(confidence,confidence_label,dataset_type, side) {
                 .remove()
             d3.select('#labels_2')
                 .selectAll('text')
+                .remove()
+
+            d3.select('#labels_2')
+                // .append('g')
+                // .attr('class', 'image-label')
+                .append('text') // 在第一个子元素之前插入文本元素
+                .text("Img2")
+                .attr('x', -10) // 负边距，确保在左侧
+                .attr('y', 15) // 确保标签在顶部
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold'); // 右对齐
+            d3.select('#labels_2')
+                .selectAll('text.class-label') // 使用更具体的选择器
+                // .selectAll('text')
                 .data(class_names) //cifar10_classes数组在image_type_grid.js中定义
                 .join('text')
+                .attr('class', 'class-label')
                 .attr('x', function (d, i) {
                     return i * (rect_height + margin) + rect_height / 2;
                 })
@@ -1051,6 +1080,13 @@ function show_confidence(confidence,confidence_label,dataset_type, side) {
             d3.select('#labels_2')
                 .selectAll('text')
                 .remove()
+            d3.select('#labels_2')
+                .append('text') // 在第一个子元素之前插入文本元素
+                .text("Image2")
+                .attr('x', -3) // 负边距，确保在左侧
+                .attr('y', 20) // 确保标签在顶部
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold'); // 右对齐
             d3.select('#labels_2')
                 .selectAll('image')
                 .data(confidence_label)
@@ -1178,7 +1214,7 @@ function show_confidence_single(confidence,confidence_label,dataset_type) {
     const svg_width = 400;
     const svg_height = 100;
     const rect_height = 18;
-    const margin = 18;
+    const margin = 20;
     const shift = 13;
     const max_height = 35; // 调整为适应纵向高度
     const min_height = 0.1;
@@ -1385,8 +1421,8 @@ locateBtn.addEventListener("click", function () {
         document.getElementById("predicted-robustness-value_2").innerText = "";
         // 显示置信度
         dataset_type = document.getElementById("select_dataset_type_selection").value
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
-        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6]
         show_confidence_single(zero_confidece, zero_confidece_label,dataset_type)
         // show_confidence(zero_confidece, "left")
         // show_confidence(zero_confidece, "right")
@@ -1898,8 +1934,8 @@ lineBtn.addEventListener("click", function () {
         // 显示置信度
         dataset_type = document.getElementById("select_dataset_type_selection").value
 
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
-        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6]
         show_confidence(zero_confidece, zero_confidece_label,dataset_type,"left")
         show_confidence(zero_confidece, zero_confidece_label,dataset_type,"right")
 
@@ -1933,8 +1969,8 @@ lineBtn.addEventListener("click", function () {
                 document.getElementById("predicted-robustness-value_1").innerText = "";
                 document.getElementById("predicted-robustness-value_2").innerText = "";
                 // 显示置信度
-                zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
-                zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+                zero_confidece = [0, 0, 0, 0, 0, 0, 0]
+                zero_confidece_label = [0, 1, 2, 3, 4, 5, 6]
                 show_confidence(zero_confidece,zero_confidece_label,dataset_type, "left")
                 show_confidence(zero_confidece, zero_confidece_label, dataset_type,"right")
 
@@ -2026,7 +2062,7 @@ lineBtn.addEventListener("click", function () {
             imageTypeGrid_svg_right.style("cursor", "wait");
             var img_informations = await get_image_information_from_python(x = x, y = y, img_name = String(img_number),img_type = 1)
             // 只展示当前模型的信息
-            console.log("点击热力图时候返回的信息： ", img_information)
+            // console.log("点击热力图时候返回的信息： ", img_information)
             var model_id = "M1"
             const radioDNNButtons = document.querySelectorAll('input[name="radio_model"]');
             radioDNNButtons.forEach((radioButton) => {
@@ -2187,14 +2223,14 @@ clearBtn.addEventListener("click", function () {
 
     if (lineBtn.checked == true) {
         // 显示置信度
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
-        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6]
         show_confidence(zero_confidece,zero_confidece_label, "left")
         show_confidence(zero_confidece,zero_confidece_label, "right")
     } else {
         // 显示置信度
-        zero_confidece = [0, 0, 0, 0, 0, 0, 0, 0]
-        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6, 7]
+        zero_confidece = [0, 0, 0, 0, 0, 0, 0]
+        zero_confidece_label = [0, 1, 2, 3, 4, 5, 6]
         // show_confidence(zero_confidece, "left")
         // show_confidence(zero_confidece, "right")
         show_confidence_single(zero_confidece, zero_confidece_label,dataset_type)
@@ -2203,11 +2239,7 @@ clearBtn.addEventListener("click", function () {
 
 })
 
-// 设置鲁棒性阈值事件~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const setThresholdBtn = document.querySelector("#threshold_save")
-setThresholdBtn.addEventListener("click", function () {
-    change_heatMap();
-})
+
 
 
 // 中间工具栏-------------------------------------------------------------------------------------
@@ -2345,15 +2377,64 @@ radioDNNButtons.forEach((radioButton) => {
 
 const imageBtn = document.querySelector("#radio_image");
 const classificationBtn = document.querySelector("#radio_classification");
+const heatmapBtn = document.querySelector("#radio_heatmap");
 imageBtn.addEventListener("click", function () {
     d3.select("#types").style("display", "flex");
+    d3.select("#thresholds").style("display", "none");
+
     d3.select("#svgContainer_imageGrid_right").style("display", "block");
     d3.select("#svgContainer_typeGrid_right").style("display", "none");
-
+    d3.select("#svgContainer_heatMapGrid").style("display", "none");
 })
 classificationBtn.addEventListener("click", function () {
     d3.select("#types").style("display", "flex");
+    d3.select("#thresholds").style("display", "none");
     d3.select("#svgContainer_imageGrid_right").style("display", "none");
     d3.select("#svgContainer_typeGrid_right").style("display", "block");
+    d3.select("#svgContainer_heatMapGrid").style("display", "none");
 })
+heatmapBtn.addEventListener("click", function () {
+    d3.select("#types").style("display", "none");
+    d3.select("#thresholds").style("display", "block");
+    d3.select("#svgContainer_imageGrid_right").style("display", "none");
+    d3.select("#svgContainer_typeGrid_right").style("display", "none");
+    d3.select("#svgContainer_heatMapGrid").style("display", "block");
+
+})
+
+
+
+// // 控cam图显示
+// const camBtn = document.querySelector("#radio_cam");
+// const nocamBtn = document.querySelector("#radio_no_cam");
+//
+// camBtn.addEventListener("click", function () {
+//
+//
+//     // d3.select("#radio_cam_div").style("display", "none");
+//     // d3.select("#radio_no_cam_div").style("display", "block");
+//     console.log("点击显示cam",nocamBtn.checked)
+//     const currentOpacity = d3.select("#imageGrid_g_right").select(".cam-image").attr("opacity");
+//     if(currentOpacity === "1"){
+//         d3.select("#radio_cam_div").style("display", "none");
+//         d3.select("#radio_no_cam_div").style("display", "block");
+//     }
+//     const newOpacity = currentOpacity === "0" ? "1" : "0";
+//     d3.select("#imageGrid_svg_right").selectAll(".cam-image").attr("opacity", newOpacity);
+//
+//  })
+// nocamBtn.addEventListener("click", function () {
+//
+//     console.log("点击取消cam", camBtn.checked)
+//     const currentOpacity = d3.select("#imageGrid_g_right").select(".cam-image").attr("opacity");
+//      if(currentOpacity === "1"){
+//         d3.select("#radio_cam_div").style("display", "block");
+//         d3.select("#radio_no_cam_div").style("display", "none");
+//     }
+//     const newOpacity = currentOpacity === "0" ? "1" : "0";
+//     d3.select("#imageGrid_svg_right").selectAll(".cam-image").attr("opacity", newOpacity);
+//
+//
+//
+//  })
 

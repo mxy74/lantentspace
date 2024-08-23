@@ -5,37 +5,7 @@ from torch.utils.data import Dataset
 import os
 from PIL import Image
 
-# 原始图像做输入，3072
-# class AutoencoderWithAttributeLoss(nn.Module):
-#     def __init__(self, input_dim, encoding_dim):
-#         super(AutoencoderWithAttributeLoss, self).__init__()
-#         self.encoder = nn.Sequential(
-#             nn.Linear(input_dim, 1024),
-#             nn.ReLU(),
-#             nn.Linear(1024, 512),
-#             nn.ReLU(),
-#             nn.Linear(512, 256),
-#             nn.ReLU(),
-#             nn.Linear(256, encoding_dim),
-#             nn.ReLU()
-#         )
-#         self.attribute_layer = nn.Linear(encoding_dim, 10)
-#         self.decoder = nn.Sequential(
-#             nn.Linear(encoding_dim, 256),
-#             nn.ReLU(),
-#             nn.Linear(256, 512),
-#             nn.ReLU(),
-#             nn.Linear(512, 1024),
-#             nn.ReLU(),
-#             nn.Linear(1024, input_dim),
-#             nn.Sigmoid()
-#         )
-#
-#     def forward(self, x):
-#         encoded = self.encoder(x)
-#         attribute_output = self.attribute_layer(encoded)
-#         decoded = self.decoder(encoded)
-#         return attribute_output, decoded
+
 
 # resnet_20feature做输入，64
 class AutoencoderWithAttributeLoss(nn.Module):
@@ -48,6 +18,7 @@ class AutoencoderWithAttributeLoss(nn.Module):
             nn.ReLU()
         )
         self.attribute_layer = nn.Linear(encoding_dim, 10)
+        # self.attribute_layer2 = nn.Linear(encoding_dim, 43)
         self.decoder = nn.Sequential(
             nn.Linear(encoding_dim, 32),
             nn.ReLU(),
@@ -58,6 +29,7 @@ class AutoencoderWithAttributeLoss(nn.Module):
     def forward(self, x):
         encoded = self.encoder(x)
         attribute_output = self.attribute_layer(encoded)
+        # attribute_output2 = self.attribute_layer2(encoded)
         decoded = self.decoder(encoded)
         return attribute_output, decoded
 # 自定义损失函数
@@ -72,11 +44,51 @@ class CustomLoss(nn.Module):
         # 计算属性层和置信度的损失
         attribute_loss = nn.CrossEntropyLoss()(attribute_output, confidence)  # 使用最高置信度作为属性值
         # 将重构损失和属性层损失结合成最终的损失
-        loss = recon_loss + attribute_loss
+        loss = recon_loss * 0.2 + attribute_loss
 
         return loss, recon_loss, attribute_loss
 
-        # return attribute_loss
+class AutoencoderWithAttributeLoss2(nn.Module):
+    def __init__(self, input_dim, encoding_dim):
+        super(AutoencoderWithAttributeLoss2, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+        )
+        self.attribute_layer = nn.Linear(16, 10)
+        self.attribute_layer2 = nn.Linear(16, encoding_dim)
+        self.decoder = nn.Sequential(
+            nn.Linear(16, 32),
+            nn.ReLU(),
+            nn.Linear(32, input_dim),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        attribute_output = self.attribute_layer(encoded)
+        attribute_output2 = self.attribute_layer2(encoded)
+        decoded = self.decoder(encoded)
+        return attribute_output, attribute_output2, decoded
+# 自定义损失函数
+class CustomLoss2(nn.Module):
+    def __init__(self):
+        super(CustomLoss2, self).__init__()
+
+    def forward(self, reconstructed, original, attribute_output, confidence, attribute_output2, label_onehot):
+        # 计算重构损失
+        recon_loss = nn.MSELoss()(reconstructed, original)
+
+        # 计算属性层和置信度的损失
+        attribute_loss = nn.CrossEntropyLoss()(attribute_output, confidence)  # 使用最高置信度作为属性值
+        attribute_loss2 = nn.CrossEntropyLoss()(attribute_output2, label_onehot)  # 使用类别标签作为属性值
+
+        # 将重构损失和属性层损失结合成最终的损失
+        loss = recon_loss + attribute_loss * 0.1 + attribute_loss2
+
+        return loss, recon_loss, attribute_loss, attribute_loss2
 
 
 class Mydata_sets(Dataset):
@@ -134,3 +146,4 @@ class Mydata_sets2(Dataset):
 
     def __len__(self):
         return len(self.zs)
+

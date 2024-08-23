@@ -33,7 +33,13 @@ function draw_imageGrid() {
 
     var img_fore_labels_lst_400 = img_DNN_for_output_lst_400_dict["M1"]
     console.log(img_fore_labels_lst_400)
-    labels_colors = { 0: '#1f76b3', 1: '#adc5e6', 2: '#fd7e0e', 3: '#fdba77',
+    var dataset_type = document.getElementById("select_dataset_type_selection").value //在Document.querySelector()通过id获取才需要加#
+    if (dataset_type == "CIFAR10") {
+        labels_colors = { 0: '#a6cee3', 1: '#1f78b4', 2: '#b2df8a', 3: '#33a02c',
+            4: '#fb9a99', 5: '#e31a1c', 6: '#fdbf6f', 7: '#ff7f00',
+            8: '#cab2d6', 9: '#6a3d9a' };
+    }else if(dataset_type == "GTSRB"){
+        labels_colors = { 0: '#1f76b3', 1: '#adc5e6', 2: '#fd7e0e', 3: '#fdba77',
             4: '#2c9f2c', 5: '#97dd89', 6: '#d42728', 7: '#fd9795',
             8: '#9366bc', 9: '#c3afd3', 10: "#8b554a", 11: '#c29b93',
             12: '#e176c0', 13: '#f5b5d0', 14: '#7e7e7e', 15: '#c5c5c5',
@@ -44,6 +50,8 @@ function draw_imageGrid() {
             32: '#023d64', 33: '#1a3d08', 34: '#576200', 35: '#490302',
             36: '#300067', 37: '#55347e', 38: '#855b2f', 39: '#86005a',
             40: '#490150', 41: "#30e5bb",42: '#025d41'};
+    }
+
     var img_coords_lst_400 = img_coords_lst_400_dict["M1"]
     //添加边框
     svg_imageGrid_g.selectAll("rect")
@@ -99,23 +107,19 @@ function draw_imageGrid() {
         .attr("border", "5")
             // 添加CAM图像层
 
-    const camImages = svg_imageGrid_g_right.selectAll(".cam-image")
-        .data(img_coords_lst_400)
-        .join("image")
-        // .attr("class", "cam-image")
-        .attr("number", (d, i) => i) // 方便后续定位图片
-        .attr("href", (d, i) => `../static/data/${dataset_type}/pic/cam_image/cam_image_${i}.png?t=` + Math.random())
-        .attr("height", rectWidth - 6)
-        .attr("width", rectWidth - 6)
-        .attr("x", (d, i) => rectWidth * (i % 20) + 3)
-        .attr("y", (d, i) => rectWidth * Math.floor(i / 20) + 3)
-        .attr("data-bs-toggle", "tooltip")
-        .attr("title", "CAM image")
-        // .attr("opacity", 0.5); // 设置透明度以便原始图像可见
-    const camBtn = document.querySelector("#radio_cam");
-    camBtn.addEventListener("click", function () {
-        const currentOpacity = camImages.attr("opacity");
-        const newOpacity = currentOpacity === "0" ? "1" : "0";
-        camImages.attr("opacity", newOpacity);
-     })
+    // svg_imageGrid_g_right.selectAll(".cam-image")
+    //     .data(img_coords_lst_400)
+    //     .join("image")
+    //     .attr("class", "cam-image")
+    //     .attr("number", (d, i) => i) // 方便后续定位图片
+    //     .attr("href", (d, i) => `../static/data/${dataset_type}/pic/cam_image/cam_image_${i}.png?t=` + Math.random())
+    //     .attr("height", rectWidth - 6)
+    //     .attr("width", rectWidth - 6)
+    //     .attr("x", (d, i) => rectWidth * (i % 20) + 3)
+    //     .attr("y", (d, i) => rectWidth * Math.floor(i / 20) + 3)
+    //     .attr("data-bs-toggle", "tooltip")
+    //     .attr("title", "CAM image")
+    //     .attr("opacity", 1); // 设置透明度以便原始图像可见
+
+
 }

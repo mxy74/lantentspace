@@ -174,3 +174,6 @@ Werkzeug==3.0.1
 widgetsnbextension==4.0.10
 wrapt==1.16.0
 zipp==3.17.0
+
+thop~=0.1.1-2209072238
+opencv-python~=4.10.0.84

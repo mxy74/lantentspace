@@ -68,7 +68,7 @@ async function get_information_from_python(extent, xScale, yScale) {
     var spinner = d3.selectAll(".spinner-border");
     spinner.style("display", "block");
     // 计算坐标，起点为左上角
-    var coordinates = calc_particular_coordinates(extent, bins, xScale, yScale);
+    coordinates = calc_particular_coordinates(extent, bins, xScale, yScale);
     var idw_p = document.getElementById("idw_p").value; //获取反距离系数
     // console.log("coordinates: ", coordinates)
     await axios.post("/get_information_data", {"coordinates": coordinates, "idw_p":idw_p})
@@ -81,8 +81,11 @@ async function get_information_from_python(extent, xScale, yScale) {
             img_DNN_for_output_lst_400_dict = data.img_DNN_for_output_lst_400_dict;
             img_DNN_output_lst_400_dict = data.img_DNN_output_lst_400_dict;
             img_coords_lst_400_dict = data.img_coords_lst_400_dict;
-            conf_matrix_dic = data.conf_matrix_dic
-            conf_matrix_label_dic = data.conf_matrix_label_dic
+            conf_matrix_dic = data.conf_matrix_dic;
+            conf_matrix_label_x_dic = data.conf_matrix_label_x_dic;
+            conf_matrix_label_y_dic = data.conf_matrix_label_y_dic;
+            conf_matrix_acc_y_dic = data.conf_matrix_acc_y_dic;
+            conf_matrix_acc_x_dic = data.conf_matrix_acc_x_dic;
             // console.log("get_information_from_python中img_types_lst_400_dict：",img_DNN_output_lst_400_dict)
         })
     return 0;
@@ -94,7 +97,7 @@ async function get_image_information_from_python(x, y, img_name = "one",img_type
     spinner.style("display", "block");
     var points = [x, y]
     var label, img_robustness, layer
-    await axios.post("/get_image_information", { "points": points, "img_name": img_name,"img_type": img_type})
+    await axios.post("/get_image_information", { "coordinates": coordinates,"points": points, "img_name": img_name,"img_type": img_type})
         .then(function (response) {
             data = response.data;
             //让等待图表隐藏起来

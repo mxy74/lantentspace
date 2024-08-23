@@ -1,3 +1,6 @@
+import json
+import shutil
+
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 import logging
@@ -95,7 +98,8 @@ def prepare_shared_data():
         # 原始tsne降维
         # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2023-08-30.pt"
         # AE加入confidence损失
-        tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-27_cof.pt"
+        tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_AE_add3loss-8-7.pt"
+        # tree_2D_path = "./static/data/CIFAR10/2D_kdTree/2D_kdTree_50000_png_2024-3-27_cof.pt"
         data_z_path = "./static/data/CIFAR10/latent_z/BigGAN_random_png_208z_50000_2023-08-30.pt"
         label_path = "./static/data/CIFAR10/labels/BigGAN_random_png_208z_50000_2023-08-30_labels.pt"
         tree_2D = torch.load(tree_2D_path)
@@ -249,7 +253,10 @@ def prepare_shared_data():
         G.load_state_dict(torch.load(checkpoints_path))
         G.eval()
 
-        tree_2D_path = "./static/data/GTSRB/2D_kdTree/2D_kdTree_50000_png_features.pt"
+        # tree_2D_path = "./static/data/GTSRB/2D_kdTree/2D_kdTree_50000_png_features.pt"
+        # tree_2D_path = "./static/data/GTSRB/2D_kdTree/2D_kdTree_50000_png_AE.pt"
+        tree_2D_path = "./static/data/GTSRB/2D_kdTree/2D_kdTree_50000_png_AE_add3loss.pt"
+
         data_z_path = "./static/data/GTSRB/latent_z/cGAN_100z_size32_50k.pt"
         label_path = "./static/data/GTSRB/labels/cGAN_label_size32_50k.pt"
         tree_2D = torch.load(tree_2D_path)
@@ -308,6 +315,7 @@ def prepare_DNN_data():
 
     print("准备CAM方法。。。")
     if dataset_type == "CIFAR10":
+        # Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id], 'features')
         Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id])
     elif dataset_type == "GTSRB":
         Global_CAM_method_dict[model_id] = CAM(Global_DNN_model_dict[model_id], 'layer4', 'linear')
@@ -359,7 +367,10 @@ def get_information_data():
     img_DNN_for_output_lst_400_dict = {}
     img_coords_lst_400_dict = {}
     conf_matrix_dic = {}
-    conf_matrix_label_dic = {}
+    conf_matrix_label_x_dic = {}
+    conf_matrix_label_y_dic = {}
+    conf_matrix_acc_x_dic = {}
+    conf_matrix_acc_y_dic = {}
     print("Global_DNN_model_dict.keys: ", Global_DNN_model_dict.keys())
     # 循环遍历模型字典中的每一个
     copy_dict = Global_DNN_model_dict.copy()  # 需要复制一下，避免运行时添加字典出错
@@ -377,7 +388,7 @@ def get_information_data():
         #     mask_threshold=0.5)
         # 不对前景使用cam，背景取一个方块
         confidence_imgs, confidence_fore_imgs, img_labels_lst_400, foreimg_labels_lst_400, img_coords_lst_400, \
-            conf_matrix_list, conf_matrix_label = my_tools.get_information_backmix(
+            conf_matrix_list, conf_matrix_label_x, conf_matrix_label_y, conf_matrix_acc_x, conf_matrix_acc_y = my_tools.get_information_backmix(
             coordinates, tree_2D, dict_zs, data_z_labels, G=G, DNN_model=DNN_model, CAMmethod=CAMmethod,
             dataset_type=dataset_type, idw_p=idw_p, mask_threshold=0.25)
         # robustness_dict[key] = list(format(float(n), '.3f')  for n in robustness)
@@ -388,7 +399,10 @@ def get_information_data():
         img_coords_lst_400_dict[key] = list(
             [format(float(n[0]), '.3f'), format(float(n[1]), '.3f')] for n in img_coords_lst_400)
         conf_matrix_dic[key] = conf_matrix_list
-        conf_matrix_label_dic[key] = conf_matrix_label
+        conf_matrix_label_x_dic[key] = conf_matrix_label_x
+        conf_matrix_label_y_dic[key] = conf_matrix_label_y
+        conf_matrix_acc_x_dic[key] = conf_matrix_acc_x
+        conf_matrix_acc_y_dic[key] = conf_matrix_acc_y
         # print(f'%s的51号类别：%.2f'%(key, float(img_DNN_output_lst_400_dict[key][51])))
     return jsonify(
         {
@@ -399,7 +413,10 @@ def get_information_data():
             "img_DNN_for_output_lst_400_dict": img_DNN_for_output_lst_400_dict,
             "img_coords_lst_400_dict": img_coords_lst_400_dict,  # 400张图片对应的坐标（后面用来当作图片的唯一id）
             "conf_matrix_dic": conf_matrix_dic,  # 混淆矩阵
-            "conf_matrix_label_dic": conf_matrix_label_dic
+            "conf_matrix_label_x_dic": conf_matrix_label_x_dic,
+            "conf_matrix_label_y_dic": conf_matrix_label_y_dic,
+            "conf_matrix_acc_y_dic": conf_matrix_acc_y_dic,
+            "conf_matrix_acc_x_dic": conf_matrix_acc_x_dic
         })
 
 
@@ -408,6 +425,7 @@ def get_information_data():
 def get_image_information():
     print("开始获取鲁棒性地图中坐标对应的信息~")
     data = request.get_json(silent=True)
+    coordinates = data["coordinates"]
     points = data["points"]
     img_name = data["img_name"]
     img_type = data["img_type"]
@@ -426,7 +444,8 @@ def get_image_information():
         CAMmethod = Global_CAM_method_dict[key]
         DNN_model = Global_DNN_model_dict[key]
         Rob_predictor = Global_rob_predictor_dict[key]
-        label, real_labels, img_robustness, layer = my_tools.get_image_information_other(points, img_type, tree_2D,
+        label, real_labels, img_robustness, layer = my_tools.get_image_information_other(coordinates, points, img_type,
+                                                                                         tree_2D,
                                                                                          dict_zs,
                                                                                          data_z_labels, G=G,
                                                                                          DNN_model=DNN_model,
@@ -439,7 +458,7 @@ def get_image_information():
         soft_max = nn.Softmax(dim=1)
         soft_layer = soft_max(layer)[0]
         # print("soft_layer: ", soft_layer)
-        top_values, top_indices = torch.topk(soft_layer, 8)
+        top_values, top_indices = torch.topk(soft_layer, 7)
         # 将 top_indices 转换为 numpy 数组，以便后续处理
         top_indices = top_indices.numpy()
         top_values = top_values.numpy()
@@ -492,7 +511,7 @@ def evaluate_image():
         soft_max = nn.Softmax(dim=1)
         soft_layer = soft_max(layer)[0]
 
-        top_values, top_indices = torch.topk(soft_layer, 8)
+        top_values, top_indices = torch.topk(soft_layer, 7)
         # 将 top_indices 转换为 numpy 数组，以便后续处理
         top_indices = top_indices.numpy()
         top_values = top_values.numpy()
@@ -514,6 +533,80 @@ def evaluate_image():
             "layer_label": layer_label_dict
         }
     )
+
+
+@app.route('/save_state', methods=["post"])
+def save_state():
+    print("进入后端处理...")
+    sys.stdout.flush()
+    data = request.get_json(silent=True)
+    state = data["state"]
+    name = state["name"]
+    dataset_type = state["dataset_type"]
+    # 创建文件夹路径
+    folder_path = os.path.join(f"./static/data/{dataset_type}/state/", name)
+    os.makedirs(folder_path, exist_ok=True)
+    # 将 state 写入文件
+    file_path = os.path.join(folder_path, "state.json")
+    with open(file_path, 'w') as f:
+        json.dump(state, f, indent=2)
+        # 需要移动的文件夹列表
+    folders_to_move = [
+        "cam_image",
+        "grid_fore_images",
+        "grid_fore_images_tensor",
+        "grid_images",
+        "grid_images_tensor",
+        "real_label_400"
+    ]
+    # 遍历每个文件夹并移动内容
+    for folder in folders_to_move:
+        src_folder = os.path.join(f"./static/data/{dataset_type}/pic/", folder)
+        dest_folder_full = os.path.join(f"./static/data/{dataset_type}/state/", name, folder)
+        shutil.copytree(src_folder, dest_folder_full)
+    base_path = f"./static/data/{dataset_type}/state/"
+
+    # Get list of subdirectories
+    subdirs = [d for d in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, d))]
+
+    # Format the list as required
+    options = [{"id": idx + 1, "name": subdir} for idx, subdir in enumerate(subdirs)]
+
+    return jsonify(options)
+
+
+
+@app.route('/upload_state', methods=["post"])
+def upload_state():
+    print("进入后端处理...")
+    sys.stdout.flush()
+    data = request.get_json(silent=True)
+    name = data["state_name"]
+    dataset_type = data["dataset_type"]
+    # 创建文件夹路径
+    folder_path = os.path.join(f"./static/data/{dataset_type}/state/", name)
+    state_file_path = os.path.join(folder_path, "state.json")
+    # 读取 state 文件
+    with open(state_file_path, 'r') as f:
+        state = json.load(f)
+    # 需要复制的文件夹列表
+    folders_to_copy = [
+        "cam_image",
+        "grid_fore_images",
+        "grid_fore_images_tensor",
+        "grid_images",
+        "grid_images_tensor",
+        "real_label_400"
+    ]
+    # 遍历每个文件夹并移动内容
+    for folder in folders_to_copy:
+        src_folder = os.path.join(f"./static/data/{dataset_type}/pic/", folder)
+        dest_folder_full = os.path.join(f"./static/data/{dataset_type}/state/", name, folder)
+        # 清空目标文件夹中的内容
+        if os.path.exists(src_folder):
+            shutil.rmtree(src_folder)
+        shutil.copytree(dest_folder_full, src_folder)
+    return state
 
 
 if __name__ == '__main__':

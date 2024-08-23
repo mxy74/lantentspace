@@ -526,13 +526,17 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
         // // sequential 
         // // multi-hue
         // // 9-class BuGn
-        // color = ['#f7fcfd','#e5f5f9','#ccece6','#99d8c9','#66c2a4','#41ae76','#238b45','#006d2c','#00441b']
+        // color = ['#f7fcfd','#e5f5f9','#ccece6','#99d8c9','' +
+        // '#66c2a4','#41ae76','#238b45','#006d2c','#00441b']
         // // 9-class BuPu
-        // color = ['#f7fcfd','#e0ecf4','#bfd3e6','#9ebcda','#8c96c6','#8c6bb1','#88419d','#810f7c','#4d004b']
+        // color = ['#f7fcfd','#e0ecf4','#bfd3e6','#9ebcda',
+        //     '#8c96c6','#8c6bb1','#88419d','#810f7c','#4d004b']
         // // 9-class GnBu
-        // color = ['#f7fcf0','#e0f3db','#ccebc5','#a8ddb5','#7bccc4','#4eb3d3','#2b8cbe','#0868ac','#084081']
+        // color = ['#f7fcf0','#e0f3db','#ccebc5','#a8ddb5',
+        //     '#7bccc4','#4eb3d3','#2b8cbe','#0868ac','#084081']
         // // 9-class OrRd
-        // color = ['#fff7ec','#fee8c8','#fdd49e','#fdbb84','#fc8d59','#ef6548','#d7301f','#b30000','#7f0000']
+        // color = ['#fff7ec','#fee8c8','#fdd49e','#fdbb84','#fc8d59',
+        //     '#ef6548','#d7301f','#b30000','#7f0000']
         // // 9-class PuBu
         // color = ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#045a8d','#023858']
         // // 9-class PuBuGn
@@ -570,10 +574,12 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
         // color = ['#c51b7d','#de77ae','#f1b6da','#fde0ef','#f7f7f7','#e6f5d0','#b8e186','#7fbc41','#4d9221']
         // color.reverse();
         // // 9-class PRGn
-        // color = ['#762a83','#9970ab','#c2a5cf','#e7d4e8','#f7f7f7','#d9f0d3','#a6dba0','#5aae61','#1b7837']
+        // color = ['#762a83','#9970ab','#c2a5cf','#e7d4e8','#f7f7f7',
+        //     '#d9f0d3','#a6dba0','#5aae61','#1b7837']
         // color.reverse();
         // // 9-class PuOr
-        // color = ['#b35806','#e08214','#fdb863','#fee0b6','#f7f7f7','#d8daeb','#b2abd2','#8073ac','#542788']
+        // color = ['#b35806','#e08214','#fdb863','#fee0b6','#f7f7f7',
+        //     '#d8daeb','#b2abd2','#8073ac','#542788']
         // color.reverse();
         // // 9-class RdBu
         // color = ['#b2182b','#d6604d','#f4a582','#fddbc7',
@@ -594,9 +600,7 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
        //  color = ['#4575b4','#6c95c5','#93b4d6','#b9d4e7',
        //     '#e0f3f8','#feefea','#e7c6bc','#eba993',
        //      '#f08b6b', '#f46d43']
-        color = ['#b1e8a5','#c6edbe','#d6f2d0','#e7f7e3',
-           '#f7fcf6','#fff6f5','#fee3e1','#fed1cd',
-            '#fdbeb9', '#f89f99']
+
 
 
         //  color = [
@@ -606,7 +610,7 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
         // color = ['#4575b4', '#74add1', '#abd9e9', '#e0f3f8',
         //     // '#e8f6fa'
         //     ];
-        color.reverse();
+        // color.reverse();
         console.log(thresholds)
     }
 
@@ -671,16 +675,16 @@ async function draw_heatMap_together(is_transition = false, is_difference = fals
             .attr("d", d3.geoPath())
             .attr("transform", "scale(" + contour_scale + ")")
             .attr("fill", (d, i) => color[i])
-            .attr("stroke", "#fff")
-            .attr("stroke-width", "0.0001px")
+            // .attr("stroke", "#fff")
+            // .attr("stroke-width", "0.0001px")
         selection_contour_right = heatMap_svg_right.select("#heatMap_g_right").selectAll("path")
             .data(contours_right, d => d.value)
             .join("path")
             .attr("d", d3.geoPath())
             .attr("transform", "scale(" + contour_scale + ")")
             .attr("fill", (d, i) => color[i])
-            .attr("stroke", "#fff")
-            .attr("stroke-width", "0.0001px")
+            // .attr("stroke", "#fff")
+            // .attr("stroke-width", "0.0001px")
     }
     //绘制x，y轴---------------------------------------
     // 绘制x轴
